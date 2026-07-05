@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Palette,
+  Share2,
   Landmark,
   Waypoints,
   Sparkles,
@@ -35,6 +36,12 @@ const QUICK_ACTIONS = [
     icon: Palette,
     title: "New marketing asset",
     description: "Generate branded event posters from a short brief",
+  },
+  {
+    href: "/social",
+    icon: Share2,
+    title: "Create a social post",
+    description: "Draft and publish a video to YouTube and Instagram",
   },
   {
     href: "/grants",
