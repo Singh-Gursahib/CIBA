@@ -2,8 +2,8 @@ import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { AI_ENABLED, model } from "@/lib/ai";
 import { currentMember } from "@/lib/os/auth";
-import { scopedContext } from "@/lib/os/context";
-import { deadlineRadar, fmtCAD, fundingRollup, impactRollup, visibleFunding, visibleProjects, visibleVentures } from "@/lib/os/store";
+import { scopedContext, studioSummary } from "@/lib/os/context";
+import { deadlineRadar, fmtCAD, fundingRollup, impactRollup, visibleFunding, visibleProjects, visibleSocial, visibleVentures } from "@/lib/os/store";
 import type { Member } from "@/lib/os/types";
 
 // Demo-mode answers: simple keyword routing over the member's scoped data,
@@ -38,6 +38,14 @@ function demoAnswer(member: Member, q: string): string {
       `You can see ${vs.length} ventures: ${im.jobs} jobs, ${fmtCAD(im.revenueCAD)} combined revenue.\n` +
       vs.map((v) => `• ${v.name} (${v.sector}, ${v.stage}) — ${v.founder}`).join("\n")
     );
+  }
+  if (/social|post|publish|youtube|instagram|reel|video|content|studio/.test(query)) {
+    const studio = studioSummary(member);
+    const seed = visibleSocial(member);
+    const lines: string[] = [];
+    if (studio.length) lines.push("Social Studio videos:\n" + studio.map((s) => `• ${s}`).join("\n"));
+    if (seed.length) lines.push("Scheduled / published posts:\n" + seed.map((s) => `• [${s.status}] ${s.channel} — ${s.content}`).join("\n"));
+    return lines.length ? lines.join("\n\n") : "No social content in your scope yet. Create one in the Social Studio (/os/social).";
   }
   if (/project|collab|program|partner/.test(query)) {
     return (

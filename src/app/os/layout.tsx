@@ -11,6 +11,7 @@ const NAV = [
   { href: "/os/timeline", label: "Timeline", icon: "▤" },
   { href: "/os/ventures", label: "Ventures", icon: "🚀" },
   { href: "/os/finance", label: "Finance", icon: "¤" },
+  { href: "/os/social", label: "Social Studio", icon: "📣" },
   { href: "/os/integrations", label: "Integrations", icon: "⇄" },
   { href: "/os/assistant", label: "AI Assistant", icon: "✦" },
   { href: "/os/admin", label: "Admin", icon: "⚙" },

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(),
   },
+  // Keep the native/binary render-engine packages out of the bundle.
+  serverExternalPackages: ["ffmpeg-static", "msedge-tts"],
 };
 
 export default nextConfig;

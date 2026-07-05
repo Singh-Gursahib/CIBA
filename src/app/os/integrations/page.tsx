@@ -2,6 +2,8 @@ import { currentMember } from "@/lib/os/auth";
 import { bufferConfigured, bufferProfiles } from "@/lib/os/connectors/buffer";
 import { gmailConfigured, gmailConnected } from "@/lib/os/connectors/gmail";
 import { qboCompanyInfo, qboConfigured, qboConnected } from "@/lib/os/connectors/quickbooks";
+import { allChannels } from "@/lib/os/social/channels";
+import { platformConfigured } from "@/lib/os/social/publish";
 import { PROJECTS } from "@/lib/os/seed";
 import { allIntegrations, canAccessProject, visibleIntegrations } from "@/lib/os/store";
 
@@ -45,6 +47,8 @@ async function liveConnectors(): Promise<LiveConnector[]> {
     const info = await qboCompanyInfo().catch(() => null);
     if (info) qboDetail = `Connected to "${info.name}"`;
   }
+  const ytChannels = allChannels().filter((c) => platformConfigured(c.key, "youtube")).map((c) => c.brand);
+  const igChannels = allChannels().filter((c) => platformConfigured(c.key, "instagram")).map((c) => c.brand);
   let bufferDetail = "";
   let bufferOk = false;
   if (bufferConfigured()) {
@@ -84,11 +88,31 @@ async function liveConnectors(): Promise<LiveConnector[]> {
       id: "buffer",
       name: "Buffer",
       provider: "Access token",
-      purpose: "Real social publishing — queue posts to LinkedIn/Instagram from CIBA OS",
+      purpose: "Legacy scheduler — queue text posts to LinkedIn/Instagram (superseded by the Social Studio)",
       configured: bufferConfigured(),
       connected: bufferOk,
       liveDetail: bufferDetail,
       envVars: ["BUFFER_ACCESS_TOKEN"],
+    },
+    {
+      id: "youtube",
+      name: "YouTube",
+      provider: "YouTube Data API",
+      purpose: "Direct video uploads from the Social Studio (/os/social)",
+      configured: ytChannels.length > 0,
+      connected: ytChannels.length > 0,
+      liveDetail: ytChannels.length ? `${ytChannels.length} channel${ytChannels.length === 1 ? "" : "s"}: ${ytChannels.join(", ")}` : "",
+      envVars: ["YOUTUBE_CLIENT_ID", "YOUTUBE_CLIENT_SECRET", "YT_<CHANNEL>_REFRESH_TOKEN"],
+    },
+    {
+      id: "instagram",
+      name: "Instagram",
+      provider: "Instagram Graph API",
+      purpose: "Publish Reels from the Social Studio (public-URL upload)",
+      configured: igChannels.length > 0,
+      connected: igChannels.length > 0,
+      liveDetail: igChannels.length ? `${igChannels.length} account${igChannels.length === 1 ? "" : "s"}: ${igChannels.join(", ")}` : "",
+      envVars: ["IG_<CHANNEL>_USER_ID", "IG_<CHANNEL>_ACCESS_TOKEN"],
     },
   ];
 }

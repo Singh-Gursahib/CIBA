@@ -2,6 +2,8 @@
 // This is THE security boundary for the AI layer: the model never receives
 // data outside the member's access — it can't leak what it never saw.
 
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   BALANCE_SHEET,
   FISCAL_YTD,
@@ -25,6 +27,40 @@ import {
   visibleVentures,
 } from "./store";
 import type { Member } from "./types";
+
+export type StudioPostLite = {
+  id: string;
+  memberId: string;
+  projectId?: string;
+  channelBrand: string;
+  title: string;
+  format: string;
+  status: string;
+  createdAt?: string;
+  targets?: { platform: string; status: string }[];
+};
+
+/** Sync read of the Social Studio store so scopedContext stays synchronous. */
+export function readStudioPosts(): StudioPostLite[] {
+  try {
+    const file = path.join(process.cwd(), ".data", "social-posts.json");
+    return JSON.parse(readFileSync(file, "utf8")) as StudioPostLite[];
+  } catch {
+    return [];
+  }
+}
+
+/** One-line summaries of a member's Studio posts (own; executives see all). */
+export function studioSummary(member: Member): string[] {
+  if (member.role !== "marketing" && member.role !== "executive") return [];
+  return readStudioPosts()
+    .filter((p) => member.role === "executive" || p.memberId === member.id)
+    .slice(0, 20)
+    .map((p) => {
+      const targets = (p.targets || []).map((t) => `${t.platform}:${t.status}`).join(", ");
+      return `${p.channelBrand} "${p.title}" [${p.status}]${targets ? ` (${targets})` : ""}`;
+    });
+}
 
 export function scopedContext(member: Member): string {
   const parts: string[] = [];
@@ -109,6 +145,25 @@ export function scopedContext(member: Member): string {
           )
           .join("\n"),
     );
+  }
+
+  // Real Social Studio posts (only for members who operate social).
+  if (member.role === "marketing" || member.role === "executive") {
+    const studio = readStudioPosts().filter((p) => member.role === "executive" || p.memberId === member.id);
+    if (studio.length) {
+      parts.push(
+        "SOCIAL STUDIO (real video posts this member operates):\n" +
+          studio
+            .slice(0, 20)
+            .map((p) => {
+              const targets = (p.targets || [])
+                .map((t) => `${t.platform}:${t.status}`)
+                .join(", ");
+              return `- [${p.status}] ${p.channelBrand} "${p.title}" (${p.format}${targets ? ", " + targets : ""})`;
+            })
+            .join("\n"),
+      );
+    }
   }
 
   parts.push(

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentMember } from "@/lib/os/auth";
+import { readStudioPosts } from "@/lib/os/context";
 import {
   fmtCAD,
   getIntegration,
@@ -144,6 +145,37 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 )}
               </div>
             ))}
+
+            {(() => {
+              const studioVideos = readStudioPosts().filter((p) => p.projectId === id);
+              if (studioVideos.length === 0) return null;
+              return (
+                <div className="pt-1">
+                  <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-1.5">
+                    Studio videos
+                  </p>
+                  <div className="space-y-2">
+                    {studioVideos.map((v) => (
+                      <div key={v.id} className="border border-line rounded-xl p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">🎬 {v.title}</p>
+                          <p className="text-[11px] text-muted mt-0.5">
+                            {v.channelBrand} · {v.format}
+                            {v.targets?.length ? ` · ${v.targets.map((t) => t.platform).join(", ")}` : ""}
+                          </p>
+                        </div>
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${postPill[v.status] ?? "bg-gray-100 text-gray-500"}`}>
+                          {v.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/os/social" className="inline-block mt-2 text-xs font-semibold text-brand hover:underline">
+                    Open Social Studio →
+                  </Link>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
