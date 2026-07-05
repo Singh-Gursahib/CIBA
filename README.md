@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CIBA OS
 
-## Getting Started
+AI workflow platform for CIBA (Central Interior Business Accelerator), Kamloops BC, built with Next.js. Three pillars:
 
-First, run the development server:
+- **Marketing Studio** — branded event posters (gpt-image-1) in every social format, plus a promotional video pipeline.
+- **Grants** — an AI agent that scans BC and Canada funders for new opportunities, analyzes fit against CIBA's history, and drafts complete proposals with a Notion-style editor and PDF / Word export.
+- **Knowledge** — an Obsidian-style graph over CIBA's documents with a tool-calling assistant that answers questions by reading only the documents it needs.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in keys
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+|---|---|
+| `OPENAI_API_KEY` | Marketing poster generation (gpt-image-1) |
+| `GEMINI_API_KEY` | Grant discovery, proposals, knowledge assistant |
+| `GEMINI_TEXT_MODEL` | Text model, default `gemini-3.5-flash` |
+| `IMAGE_QUALITY` | `low` (dev default) / `medium` / `high` |
+| `MOCK_AI` | `true` = every AI feature uses zero-cost fixtures. Default when unset. |
 
-## Learn More
+**Mock mode:** with `MOCK_AI=true` the entire app works with no keys — posters render as branded SVG placeholders, video uses a bundled sample render. Set `MOCK_AI=false` for real generation.
 
-To learn more about Next.js, take a look at the following resources:
+## Branding
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Drop the real logo files at `brand/ciba-logo.png` and `brand/tru-logo.png` — they are automatically attached to every image-generation request.
+- `brand/brand.md` is the written design language injected into generation prompts. Edit it freely; no code changes needed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Folder map
 
-## Deploy on Vercel
+```
+app/           routes + API endpoints
+components/    ui/ (design system) and layout/ (shell)
+features/      feature-scoped components, data loaders, server actions
+lib/           ai/ (providers, prompts, mock), store/ (JSON persistence), video/ (provider seam), utils/
+content/       knowledge-base markdown documents (Phase 3)
+brand/         logos + brand.md
+data/          runtime state: jobs, uploads, generated outputs (gitignored)
+types/         shared TypeScript types
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Proposals: editing and export
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Generated proposals open in a Notion-style Tiptap editor (`/grants/proposals/<slug>`): slash menu for blocks, a bubble menu with AI rewrite (selection or whole document), autosave with version history, and one-click export to PDF (Puppeteer, cover page + running footers) or Word (`.docx`). The no-em-dash rule is enforced by prompt and by a server-side sanitizer on every save and generation. PDF is the canonical output; complex nested Markdown may simplify slightly in Word.
+
+## Swapping in the real video pipeline
+
+Implement `VideoProvider` in `lib/video/provider.ts` (`start` + `poll`) and replace the `stubProvider` export. The UI (progress ring, elapsed timer, stage labels, player) works unchanged.
+
+## Scripts
+
+- `npm run dev` — development server
+- `npm run build` / `npm start` — production
+- `npm run typecheck` — TypeScript check
+- `/styleguide` — internal design-system reference page

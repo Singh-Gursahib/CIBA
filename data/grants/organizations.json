@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pacifican",
+    "name": "PacifiCan (Pacific Economic Development Canada)",
+    "url": "https://www.canada.ca/en/pacific-economic-development.html",
+    "focus": "measurable regional economic impact, business scale-up, and evidence-based programming with strong logic models and quantified KPIs"
+  },
+  {
+    "id": "etsi-bc",
+    "name": "ETSI-BC (Economic Trust of the Southern Interior)",
+    "url": "https://www.etsi-bc.ca",
+    "focus": "economic diversification and community economic development across the BC Southern Interior"
+  },
+  {
+    "id": "innovate-bc",
+    "name": "Innovate BC",
+    "url": "https://www.innovatebc.ca",
+    "focus": "technology innovation, startup growth, youth engagement, and provincial alignment"
+  },
+  {
+    "id": "discovery-foundation",
+    "name": "Discovery Foundation",
+    "url": "https://www.discoveryfoundation.ca",
+    "focus": "AI education, community impact, and innovation capacity building"
+  },
+  {
+    "id": "webc",
+    "name": "WeBC",
+    "url": "https://we-bc.ca",
+    "focus": "women entrepreneurs, mentorship, inclusivity, and community support"
+  }
+]

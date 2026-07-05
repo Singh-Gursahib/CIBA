@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Keep native / heavy server-only packages out of the bundle.
+  serverExternalPackages: ["puppeteer"],
 };
 
 export default nextConfig;
