@@ -48,3 +48,6 @@ data/marketing/jobs.json
 data/grants/discoveries.json
 data/grants/activity-log.json
 data/proposals/
+data/social/outputs/
+data/social/work/
+data/social/posts.json

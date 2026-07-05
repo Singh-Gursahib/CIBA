@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Palette, Landmark, Waypoints, Sparkles } from "lucide-react";
+import { LayoutDashboard, Palette, Share2, Landmark, Waypoints, Sparkles } from "lucide-react";
 import { Logo, CoBrand } from "@/components/ui/logo";
 import { cn } from "@/lib/utils/cn";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/marketing", label: "Marketing Studio", icon: Palette },
+  { href: "/social", label: "Social Media", icon: Share2 },
   { href: "/grants", label: "Grants", icon: Landmark },
   { href: "/knowledge", label: "Knowledge", icon: Waypoints },
   { href: "/assistant", label: "Assistant", icon: Sparkles },
