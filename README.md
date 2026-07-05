@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CIBA Launchpad + CIBA OS
 
-## Getting Started
+A real-use-case prototype built for **CIBA — Central Interior Business Accelerator** (formerly Kamloops Innovation), the nonprofit accelerator based at the Thompson Rivers University campus in Kamloops, BC, serving founders across the Thompson, Nicola & Cariboo regions.
 
-First, run the development server:
+Two halves:
+1. **Launchpad** (public tools) — automates the three activities that take the most staff time
+2. **CIBA OS** (`/os`) — the internal operating system for the whole organization
+
+## CIBA OS — the internal platform
+
+Sign in as any of 5 team members (`/os-login`); **everything is permission-scoped** — each member sees only the collaborations, funding, documents, and integrations their role allows.
+
+| Module | What it does |
+|---|---|
+| **Dashboard** (`/os`) | Your scoped view: collaborations, impact rollup (ventures/jobs/revenue — the numbers CIBA reports to funders), funding rollup, **deadline radar** for funder reports, team activity feed |
+| **Project workspaces** (`/os/projects/[id]`) | Per-collaboration hub: partners, team, funding records, social calendar, documents (sensitive docs gated to lead + executives), ventures |
+| **Finance** (`/os/finance`) | Full statements: balance sheet (Statement of Financial Position), income statement (Statement of Operations), 6-month revenue/expense trend, **3-month cash forecast** with closing cash + runway. Gated to finance-access members only |
+| **Brain Map** (`/os/brain-map`) | Live force-directed graph of the whole org — CIBA ↔ collaborations ↔ partners ↔ members ↔ integrations ↔ ventures. Draggable, hover-highlighting, click-to-inspect. Scoped: an executive sees the whole brain, others see their slice |
+| **Integrations** (`/os/integrations`) | Financing ledger (QuickBooks), social scheduler (Buffer), events (Eventbrite), document vault (Drive), venture CRM (Airtable), AI layer — with per-role operate permissions and health status |
+| **AI Assistant** (`/os/assistant`) | The LLM access layer: the model receives **only the signed-in member's scoped data** — it can't leak what it never saw. Ask the same question as different members and watch answers change |
+
+The collaborations are CIBA's **real programs and partners**: TRU Generator (Thompson Rivers University), Road to Web Summit Vancouver (Innovate BC), AccelerateIP (New Ventures BC + Innovate BC), ThreeSixty & Delta delivery (Accelerate Okanagan / PacifiCan), Applied AI Implementation Clinics (Discovery Foundation), AI Skills Accelerator (KPMG sponsor), Indigenous business development (Sc.wén̓wen / Tk̓emlúps te Secwépemc), newcomer workshops (Kamloops Immigration Services), and the ETSI-BC-funded strategic plan. Team members, ventures, dollar amounts, and documents are illustrative dummy data.
+
+### The 5 demo members
+| Member | Role | Sees |
+|---|---|---|
+| Sachin Singh | Executive Director | Everything |
+| Rob Tremblay | Programs Manager | TRU Generator, R2WSV, AccelerateIP, ThreeSixty & Delta |
+| Sofia Marques | Partnerships & Funding Lead | ThreeSixty & Delta, AI Clinics, Strategic Plan, AI Skills + **Finance** |
+| Jake Williams | Marketing Coordinator | R2WSV, AI Skills, AI Clinics + social integrations |
+| Anita Baptiste | Indigenous & Regional Outreach | Indigenous partnership, newcomer workshops, TRU Generator |
+
+## Launchpad (public tools)
+
+## The three tools
+
+| Tool | Who | The real problem it solves |
+|------|-----|----------------------------|
+| **Founder Intake & Triage** (`/intake`) | Founders (public) | Manual, subjective intake. A founder describes their venture → AI pins the **stage**, scores **accelerator-readiness (0–100)**, maps them to CIBA's **six real service areas**, routes them to the right **program**, and writes a **staff brief** so the first call starts warm. |
+| **Mentor Matching** (`/dashboard`) | CIBA staff | Matching 250+ entrepreneurs to advisors from memory. Paste a founder profile → the engine **ranks the mentor network** by industry / stage / expertise fit, with a "why matched" and an honest caveat each. |
+| **AI-Readiness Assessment** (`/ai-readiness`) | Local SMBs (public) | Selling "AI adoption" without a tangible demo. An SMB answers 5 questions → a **practical AI opportunity report** (top wins by effort/impact + a recommended first project). Doubles as a lead magnet for CIBA's **AI Skills Accelerator**. |
+
+Everything is grounded in CIBA's actual service areas and programs (`src/lib/ciba.ts`), not generic startup boilerplate.
+
+## Runs with zero setup
+
+The app works fully in **demo mode** out of the box — a deterministic heuristic engine (`src/lib/demo.ts`) powers every result with no API key. Add an Anthropic key and each route switches to real Claude reasoning (`generateObject` + zod schemas). If a live call fails, it gracefully falls back to demo mode.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev            # http://localhost:3000  (demo mode)
+
+# For real Claude reasoning:
+cp .env.example .env.local
+# add ANTHROPIC_API_KEY=... then restart
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16** (App Router) + **React 19** + **Tailwind CSS 4**
+- **Vercel AI SDK** (`ai`, `@ai-sdk/anthropic`) with **Claude Haiku 4.5** (triage / readiness) and **Claude Sonnet 5** (mentor matching)
+- **Zod** schemas for structured, validated AI output
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
+```
+src/
+  app/
+    page.tsx                 landing
+    intake/                  founder intake & triage UI
+    ai-readiness/            SMB AI-readiness quiz UI
+    dashboard/               staff mentor-matching UI
+    api/{triage,match,ai-readiness}/route.ts   AI endpoints (+ demo fallback)
+  lib/
+    ciba.ts                  CIBA service areas, programs, stages
+    mentors.ts               mentor network seed data
+    schemas.ts               zod input/output schemas
+    ai.ts                    model config + AI_ENABLED flag
+    demo.ts                  deterministic demo-mode engine
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Push to a Git repo and import into Vercel, or run `vercel`. Set `ANTHROPIC_API_KEY` in project env vars for live AI (optional).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Prototype — not affiliated with or endorsed by CIBA. Mentor data is illustrative seed data.*
