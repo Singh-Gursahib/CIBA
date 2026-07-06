@@ -53,6 +53,7 @@ export default async function TimelinePage() {
         />
         <div className="mt-6 pt-4 border-t border-line flex flex-wrap gap-4 text-xs text-muted">
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded inline-block" style={{ background: "#0f5c4a" }} /> Active</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded inline-block" style={{ background: "#e07a2f" }} /> Planning</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded inline-block" style={{ background: "#8a978f" }} /> Wrapped</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Report deadline</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-0.5 h-3 bg-accent inline-block" /> Today</span>

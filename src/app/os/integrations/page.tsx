@@ -15,12 +15,14 @@ const kindLabel: Record<string, string> = {
   llm: "AI Layer",
 };
 
-const kindIcon: Record<string, string> = {
-  financing: "💰",
-  social: "📣",
-  data: "🗂",
-  crm: "👥",
-  llm: "✦",
+import { Banknote, Megaphone, Database, Users, Sparkles, type LucideIcon } from "lucide-react";
+
+const kindIcon: Record<string, LucideIcon> = {
+  financing: Banknote,
+  social: Megaphone,
+  data: Database,
+  crm: Users,
+  llm: Sparkles,
 };
 
 const statusStyle: Record<string, string> = {
@@ -192,7 +194,7 @@ export default async function IntegrationsPage() {
             <div key={i.id} className={`card p-5 ${usable ? "" : "opacity-55"}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{kindIcon[i.kind]}</span>
+                  {(() => { const Ic = kindIcon[i.kind]; return <span className="grid place-items-center w-9 h-9 rounded-lg bg-brand-soft text-brand shrink-0">{Ic ? <Ic className="w-[18px] h-[18px]" strokeWidth={1.75} /> : null}</span>; })()}
                   <div>
                     <p className="font-semibold leading-tight">{i.name}</p>
                     <p className="text-xs text-muted">{kindLabel[i.kind]} · {i.provider}</p>

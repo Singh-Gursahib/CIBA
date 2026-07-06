@@ -127,6 +127,24 @@ export function demoReadiness(input: ReadinessInput): ReadinessResult {
 
   const band: ReadinessResult["band"] = score >= 75 ? "Accelerating" : score >= 55 ? "Ready" : "Exploring";
 
+  // Industry-aware opportunity pool — pick the ones whose tags match the
+  // business/industry, so a bakery and a law firm get different reports.
+  type Opp = ReadinessResult["opportunities"][number] & { tags: string[] };
+  const POOL: Opp[] = [
+    { title: "Automate customer & email responses", problem: "Staff spend hours each week answering the same questions and emails.", solution: "An AI assistant drafts replies from your past responses and FAQs; a human approves and sends.", impact: "high", effort: "low", tags: ["retail", "service", "hospitality", "clinic", "general"] },
+    { title: "AI-assisted booking & scheduling", problem: "Appointments and reservations are managed by phone and back-and-forth messages.", solution: "An assistant handles booking requests, confirmations, and reminders, and flags conflicts for staff.", impact: "high", effort: "low", tags: ["hospitality", "clinic", "salon", "restaurant", "service", "tourism"] },
+    { title: "Extract data from invoices & documents", problem: "Invoices, forms, and delivery notes get re-typed by hand into spreadsheets.", solution: "AI reads documents and extracts the fields you need, ready to review and import.", impact: "medium", effort: "medium", tags: ["manufacturing", "construction", "logistics", "accounting", "trades", "general"] },
+    { title: "Demand & inventory forecasting", problem: "Over- and under-ordering ties up cash and leads to stockouts.", solution: "AI forecasts demand from your sales history and seasonality so you order the right amounts.", impact: "high", effort: "medium", tags: ["retail", "restaurant", "manufacturing", "food", "bakery", "logistics"] },
+    { title: "Draft proposals, quotes & contracts", problem: "Quotes and proposals are written from scratch every time.", solution: "AI drafts tailored quotes and proposals from a template plus the job details; you review and send.", impact: "high", effort: "low", tags: ["construction", "trades", "professional", "consulting", "agency", "b2b"] },
+    { title: "Turn reviews & feedback into insight", problem: "Customer reviews and survey responses pile up and never get read.", solution: "AI summarizes feedback into weekly digests and flags trends, complaints, and opportunities.", impact: "medium", effort: "low", tags: ["retail", "hospitality", "restaurant", "tourism", "general"] },
+    { title: "Content & social from your expertise", problem: "Marketing is inconsistent because nobody has time to write posts.", solution: "AI turns a short brief into on-brand posts, captions, and newsletters for your review.", impact: "medium", effort: "low", tags: ["agency", "tourism", "retail", "nonprofit", "creative", "general"] },
+    { title: "Knowledge assistant for your team", problem: "Answers live in binders, inboxes, and people's heads.", solution: "An assistant trained on your documents answers staff and customer questions instantly.", impact: "medium", effort: "medium", tags: ["professional", "clinic", "nonprofit", "manufacturing", "general"] },
+  ];
+  const needle = `${input.industry} ${vals}`.toLowerCase();
+  const scoreOpp = (o: Opp) => o.tags.filter((t) => t !== "general" && needle.includes(t)).length + (o.tags.includes("general") ? 0.1 : 0);
+  const ranked = [...POOL].sort((a, b) => scoreOpp(b) - scoreOpp(a));
+  const picks = ranked.slice(0, 3).map(({ tags: _tags, ...o }) => o);
+
   return {
     score,
     band,
@@ -136,31 +154,8 @@ export function demoReadiness(input: ReadinessInput): ReadinessResult {
         : band === "Ready"
           ? `${input.business} has clear, practical AI opportunities worth starting on.`
           : `${input.business} can unlock AI with a few foundational steps first.`,
-    opportunities: [
-      {
-        title: "Automate customer & email responses",
-        problem: "Staff spend hours each week answering the same customer questions and emails.",
-        solution: "An AI assistant drafts replies from your past responses and FAQs; a human approves & sends.",
-        impact: "high",
-        effort: "low",
-      },
-      {
-        title: "Turn documents & notes into structured data",
-        problem: "Invoices, forms, and notes get re-typed by hand into spreadsheets or your system.",
-        solution: "AI reads documents and extracts the fields you need, ready to review and import.",
-        impact: "medium",
-        effort: "medium",
-      },
-      {
-        title: "Summarize & surface what matters",
-        problem: "Reports, reviews, and meeting notes pile up and never get read.",
-        solution: "AI summarizes them into weekly digests and flags trends, risks, and opportunities.",
-        impact: "medium",
-        effort: "low",
-      },
-    ],
-    firstProject:
-      "Start with automating repetitive customer responses — it's low effort, high impact, and pays back within weeks while building your team's confidence with AI.",
+    opportunities: picks,
+    firstProject: `Start with "${picks[0].title.toLowerCase()}" — it's ${picks[0].effort} effort, ${picks[0].impact} impact, and pays back within weeks while building your team's confidence with AI.`,
     cibaHook:
       "CIBA's AI Skills Accelerator would pair you with mentors and TRU talent to ship this first project hands-on, not just talk about it.",
   };

@@ -13,6 +13,8 @@ export async function POST() {
   const member = await currentMember();
   if (!member) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   if (!canOperateSocial(member)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-  const result = await runScheduled();
+  // Executives can run the whole queue; others only their own scheduled posts.
+  const ownerId = member.role === "executive" ? undefined : member.id;
+  const result = await runScheduled(ownerId);
   return NextResponse.json(result);
 }

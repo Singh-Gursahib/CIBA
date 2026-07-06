@@ -43,7 +43,7 @@ async function publishYouTube(post: StudioPost, mediaAbs: string): Promise<Publi
       description: withHashtags(post.description, post.hashtags),
       tags,
       privacyStatus: post.privacy,
-      categoryId: post.channelKey === "embertide" ? "28" : "17",
+      categoryId: post.channelKey === "speedmania" || post.channelKey === "goalmania" ? "17" : "28",
     },
     creds,
   );

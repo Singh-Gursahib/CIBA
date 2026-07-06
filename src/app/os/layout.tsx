@@ -1,20 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LayoutDashboard, Network, Inbox, CalendarDays, Rocket, Banknote, Landmark, Megaphone, Cable, Sparkles, Settings } from "lucide-react";
 import { currentMember, impersonator } from "@/lib/os/auth";
+import { ToastProvider } from "@/components/toast";
 import { ImpersonationBanner } from "./impersonation-banner";
 import { SwitchMemberButton } from "./switch-member";
 
 const NAV = [
-  { href: "/os", label: "Dashboard", icon: "▦" },
-  { href: "/os/brain-map", label: "Brain Map", icon: "◉" },
-  { href: "/os/inbox", label: "Inbox", icon: "✉" },
-  { href: "/os/timeline", label: "Timeline", icon: "▤" },
-  { href: "/os/ventures", label: "Ventures", icon: "🚀" },
-  { href: "/os/finance", label: "Finance", icon: "¤" },
-  { href: "/os/social", label: "Social Studio", icon: "📣" },
-  { href: "/os/integrations", label: "Integrations", icon: "⇄" },
-  { href: "/os/assistant", label: "AI Assistant", icon: "✦" },
-  { href: "/os/admin", label: "Admin", icon: "⚙" },
+  { href: "/os", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/os/brain-map", label: "Brain Map", icon: Network },
+  { href: "/os/inbox", label: "Inbox", icon: Inbox },
+  { href: "/os/timeline", label: "Timeline", icon: CalendarDays },
+  { href: "/os/ventures", label: "Ventures", icon: Rocket },
+  { href: "/os/grants", label: "Grants", icon: Landmark },
+  { href: "/os/finance", label: "Finance", icon: Banknote },
+  { href: "/os/social", label: "Social Studio", icon: Megaphone },
+  { href: "/os/integrations", label: "Integrations", icon: Cable },
+  { href: "/os/assistant", label: "AI Assistant", icon: Sparkles },
+  { href: "/os/admin", label: "Admin", icon: Settings },
 ];
 
 export default async function OSLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +26,7 @@ export default async function OSLayout({ children }: { children: React.ReactNode
   const admin = await impersonator();
 
   return (
+    <ToastProvider>
     <div className="mx-auto max-w-7xl px-5 py-6 flex gap-6">
       <aside className="w-56 shrink-0 hidden md:block">
         <div className="card p-4 sticky top-24">
@@ -38,14 +42,14 @@ export default async function OSLayout({ children }: { children: React.ReactNode
               <p className="text-xs text-muted truncate">{member.title}</p>
             </div>
           </div>
-          <nav className="mt-3 space-y-1">
+          <nav className="mt-3 space-y-0.5">
             {NAV.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-brand-soft text-ink/80 hover:text-brand-ink transition"
               >
-                <span className="text-brand">{n.icon}</span> {n.label}
+                <n.icon className="w-[18px] h-[18px] text-muted" strokeWidth={1.75} /> {n.label}
               </Link>
             ))}
           </nav>
@@ -65,5 +69,6 @@ export default async function OSLayout({ children }: { children: React.ReactNode
         {children}
       </div>
     </div>
+    </ToastProvider>
   );
 }

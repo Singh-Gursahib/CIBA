@@ -14,7 +14,7 @@
  * those are trademarks. Rename freely here.
  */
 
-export type ChannelKey = "speedmania" | "goalmania" | "embertide";
+export type ChannelKey = "ciba" | "speedmania" | "goalmania" | "embertide";
 
 export type Channel = {
   key: ChannelKey;
@@ -50,7 +50,20 @@ export type Channel = {
 };
 
 export const CHANNELS: Record<ChannelKey, Channel> = {
-  // Motorsport stats channel — the primary demo channel.
+  // CIBA's own accelerator channel — the default. Promotes programs, demo days,
+  // founder wins, and workshops across the Thompson-Nicola-Cariboo region.
+  ciba: {
+    key: "ciba",
+    brand: "CIBA",
+    blurb: "Central Interior Business Accelerator — programs, demo days, and founder wins.",
+    ctaText: "Apply at ciba.ca",
+    ctaSub: "LINK IN BIO",
+    envPrefix: "CIBA",
+    hashtags: ["#kamloops", "#startups", "#entrepreneurship", "#smallbusiness", "#innovation", "#accelerator", "#bcbusiness", "#founders", "#tru", "#interiorbc"],
+    brollQueries: ["startup team meeting", "entrepreneur working laptop", "business workshop presentation", "modern coworking space", "handshake business deal", "city skyline british columbia"],
+    voice: "en-US-AndrewNeural",
+  },
+  // Motorsport stats channel.
   speedmania: {
     key: "speedmania",
     brand: "SPEED MANIA",
@@ -88,7 +101,7 @@ export const CHANNELS: Record<ChannelKey, Channel> = {
   },
 };
 
-export const DEFAULT_CHANNEL: ChannelKey = "speedmania";
+export const DEFAULT_CHANNEL: ChannelKey = "ciba";
 
 export function getChannel(key?: string | null): Channel {
   return (key && CHANNELS[key as ChannelKey]) || CHANNELS[DEFAULT_CHANNEL];

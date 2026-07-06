@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { currentMember } from "@/lib/os/auth";
+import { canAccessProject } from "@/lib/os/store";
 import { DATA_DIR } from "@/lib/os/social/config";
 import { canOperateSocial } from "@/lib/os/social/access";
 import { getChannel, type ChannelKey } from "@/lib/os/social/channels";
@@ -31,7 +32,9 @@ export async function POST(req: Request) {
   const format = (String(form.get("format")) === "video" ? "video" : "short") as MediaFormat;
   const privacyRaw = String(form.get("privacy") ?? "private");
   const privacy: PrivacyStatus = privacyRaw === "public" || privacyRaw === "unlisted" ? privacyRaw : "private";
-  const projectId = String(form.get("projectId") ?? "").trim() || undefined;
+  const projectIdRaw = String(form.get("projectId") ?? "").trim() || undefined;
+  // Only allow linking to a collaboration the member can actually access.
+  const projectId = projectIdRaw && canAccessProject(member, projectIdRaw) ? projectIdRaw : undefined;
   const script = String(form.get("script") ?? "").trim() || undefined;
   const scheduledForRaw = String(form.get("scheduledFor") ?? "").trim();
   const scheduledFor = scheduledForRaw ? new Date(scheduledForRaw).toISOString() : undefined;

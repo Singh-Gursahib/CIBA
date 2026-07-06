@@ -168,17 +168,22 @@ export function SocialStudio({
 /* ---------------- Calendar ---------------- */
 
 function Calendar({ posts, onRan }: { posts: StudioPost[]; onRan: () => void }) {
-  const [cursor, setCursor] = useState(() => {
-    const d = new Date();
-    return { y: d.getFullYear(), m: d.getMonth() };
-  });
+  // Compute "now" only after mount, so the server render and first client render
+  // agree (avoids a month/timezone hydration mismatch).
+  const [cursor, setCursor] = useState<{ y: number; m: number } | null>(null);
+  const [nowIso, setNowIso] = useState("");
   const [running, setRunning] = useState(false);
+  useEffect(() => {
+    const d = new Date();
+    setCursor({ y: d.getFullYear(), m: d.getMonth() });
+    setNowIso(d.toISOString());
+  }, []);
+  if (!cursor) return <div className="card p-4 text-sm text-muted">Loading calendar…</div>;
 
   const first = new Date(cursor.y, cursor.m, 1);
   const startDow = first.getDay();
   const daysInMonth = new Date(cursor.y, cursor.m + 1, 0).getDate();
   const monthLabel = first.toLocaleString("en-CA", { month: "long", year: "numeric" });
-  const nowIso = new Date().toISOString();
 
   const dayKey = (p: StudioPost) => (p.scheduledFor || p.publishedAt || p.createdAt).slice(0, 10);
   const byDay: Record<string, StudioPost[]> = {};
@@ -212,11 +217,11 @@ function Calendar({ posts, onRan }: { posts: StudioPost[]; onRan: () => void }) 
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-semibold text-sm">📅 Content calendar</span>
         <div className="flex items-center gap-1 ml-2">
-          <button className="btn btn-ghost !py-1 !px-2 text-xs" onClick={() => setCursor((c) => (c.m === 0 ? { y: c.y - 1, m: 11 } : { y: c.y, m: c.m - 1 }))}>
+          <button className="btn btn-ghost !py-1 !px-2 text-xs" onClick={() => setCursor((c) => (!c ? c : c.m === 0 ? { y: c.y - 1, m: 11 } : { y: c.y, m: c.m - 1 }))}>
             ‹
           </button>
           <span className="text-xs font-medium text-muted w-32 text-center">{monthLabel}</span>
-          <button className="btn btn-ghost !py-1 !px-2 text-xs" onClick={() => setCursor((c) => (c.m === 11 ? { y: c.y + 1, m: 0 } : { y: c.y, m: c.m + 1 }))}>
+          <button className="btn btn-ghost !py-1 !px-2 text-xs" onClick={() => setCursor((c) => (!c ? c : c.m === 11 ? { y: c.y + 1, m: 0 } : { y: c.y, m: c.m + 1 }))}>
             ›
           </button>
         </div>
@@ -367,7 +372,7 @@ function Composer({
           className="field min-h-20"
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
-          placeholder="e.g. The three closest title finishes in racing history"
+          placeholder="e.g. 3 signs your business is ready for the AI Skills Accelerator"
         />
       </div>
 

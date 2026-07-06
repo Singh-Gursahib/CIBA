@@ -59,11 +59,16 @@ export async function runPublish(postId: string): Promise<StudioPost | undefined
   });
 }
 
-/** Publish every post whose scheduled time has arrived and that is approved. */
-export async function runScheduled(): Promise<{ published: number; ids: string[] }> {
+/**
+ * Publish every post whose scheduled time has arrived and that is approved.
+ * Scoped: pass an ownerId to only publish that member's posts (non-executives
+ * can only fire their own scheduled posts, never a colleague's).
+ */
+export async function runScheduled(ownerId?: string): Promise<{ published: number; ids: string[] }> {
   const now = new Date().toISOString();
   const due = (await listPosts()).filter(
     (p) =>
+      (!ownerId || p.memberId === ownerId) &&
       p.scheduledFor &&
       p.scheduledFor <= now &&
       p.approval === "approved" &&

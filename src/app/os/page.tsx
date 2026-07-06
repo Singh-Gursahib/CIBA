@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Donut, HBarChart } from "@/components/charts";
 import { currentMember } from "@/lib/os/auth";
+import { Landmark } from "lucide-react";
 import { readStudioPosts } from "@/lib/os/social/read-sync";
+import { canUseGrants } from "@/lib/os/grants/access";
+import { listDiscoveries, listProposals } from "@/lib/os/grants/store";
 import {
   deadlineRadar,
   fmtCAD,
@@ -47,6 +50,12 @@ export default async function OSDashboard() {
     drafts: studioPosts.filter((p) => p.status !== "published" && !p.scheduledFor).length,
     pending: studioPosts.filter((p) => p.approval === "pending").length,
   };
+
+  // Grants rollup (funding + executive only).
+  const showGrants = canUseGrants(member);
+  const [grantDiscoveries, grantProposals] = showGrants ? await Promise.all([listDiscoveries(), listProposals()]) : [[], []];
+  const grantNew = grantDiscoveries.filter((d) => d.status === "new").length;
+  const grantShortlisted = grantDiscoveries.filter((d) => d.status === "shortlisted").length;
 
   const social = visibleSocial(member);
   const channelViews = ["LinkedIn", "Instagram", "Eventbrite", "Newsletter"]
@@ -154,6 +163,27 @@ export default async function OSDashboard() {
 
         {/* Right rail */}
         <div className="space-y-5">
+          {showGrants && (
+            <Link href="/os/grants" className="card p-5 block hover:-translate-y-0.5 hover:shadow-md transition-all">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-sm flex items-center gap-1.5"><Landmark className="w-4 h-4 text-brand" strokeWidth={1.75} /> Grants</h2>
+                {grantNew > 0 && <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent">{grantNew} new</span>}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                {[
+                  { label: "Opportunities", value: grantDiscoveries.length },
+                  { label: "Shortlisted", value: grantShortlisted },
+                  { label: "Proposals", value: grantProposals.length },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <p className="text-xl font-bold text-brand">{s.value}</p>
+                    <p className="text-[11px] text-muted">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Link>
+          )}
+
           {canSocial && (
             <Link href="/os/social" className="card p-5 block hover:-translate-y-0.5 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
