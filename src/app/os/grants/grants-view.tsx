@@ -18,6 +18,16 @@ export function GrantsView({ discoveries: initial, proposals, funders }: { disco
   const [discoveries, setDiscoveries] = useState<Discovery[]>(initial);
   const [wizard, setWizard] = useState<Discovery | null>(null);
 
+  // After a scan (or any server refresh) the server component re-renders with a
+  // fresh `initial`; useState ignores prop changes, so re-sync during render —
+  // otherwise newly discovered opportunities don't appear until a full reload.
+  // (React's recommended "adjust state when a prop changes" pattern.)
+  const [prevInitial, setPrevInitial] = useState(initial);
+  if (initial !== prevInitial) {
+    setPrevInitial(initial);
+    setDiscoveries(initial);
+  }
+
   const update = (d: Discovery) => setDiscoveries((prev) => prev.map((x) => (x.id === d.id ? d : x)));
 
   const active = discoveries.filter((d) => d.status !== "dismissed");

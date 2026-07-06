@@ -650,6 +650,9 @@ function ChannelStats() {
       setLoading(false);
     }
   };
+  // Pull live channel numbers on mount so the panel is never blank.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, []);
   return (
     <div className="card p-4">
       <div className="flex items-center gap-2">
@@ -659,7 +662,9 @@ function ChannelStats() {
         </button>
       </div>
       {!stats ? (
-        <p className="text-xs text-muted mt-2">YouTube subscribers and views per channel. Loaded on demand.</p>
+        <p className="text-xs text-muted mt-2">
+          {loading ? "Loading live channel numbers…" : "YouTube subscribers and views per channel."}
+        </p>
       ) : (
         <div className="grid sm:grid-cols-3 gap-3 mt-3">
           {stats.map((s) => (
