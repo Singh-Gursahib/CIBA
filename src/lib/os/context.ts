@@ -2,8 +2,7 @@
 // This is THE security boundary for the AI layer: the model never receives
 // data outside the member's access — it can't leak what it never saw.
 
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { readStudioPosts, type StudioPostLite } from "./social/read-sync";
 import {
   BALANCE_SHEET,
   FISCAL_YTD,
@@ -28,27 +27,7 @@ import {
 } from "./store";
 import type { Member } from "./types";
 
-export type StudioPostLite = {
-  id: string;
-  memberId: string;
-  projectId?: string;
-  channelBrand: string;
-  title: string;
-  format: string;
-  status: string;
-  createdAt?: string;
-  targets?: { platform: string; status: string }[];
-};
-
-/** Sync read of the Social Studio store so scopedContext stays synchronous. */
-export function readStudioPosts(): StudioPostLite[] {
-  try {
-    const file = path.join(process.cwd(), ".data", "social-posts.json");
-    return JSON.parse(readFileSync(file, "utf8")) as StudioPostLite[];
-  } catch {
-    return [];
-  }
-}
+export { readStudioPosts, type StudioPostLite };
 
 /** One-line summaries of a member's Studio posts (own; executives see all). */
 export function studioSummary(member: Member): string[] {

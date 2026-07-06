@@ -1,5 +1,6 @@
 import { Timeline } from "@/components/charts";
 import { currentMember } from "@/lib/os/auth";
+import { readStudioPosts } from "@/lib/os/social/read-sync";
 import { deadlineRadar, getPartner, visibleProjects } from "@/lib/os/store";
 
 const statusColor: Record<string, string> = {
@@ -12,6 +13,14 @@ export default async function TimelinePage() {
   const member = (await currentMember())!;
   const projects = visibleProjects(member).sort((a, b) => (a.start < b.start ? -1 : 1));
   const deadlines = deadlineRadar(member);
+
+  // Published Social Studio posts appear as timeline markers (scoped).
+  const canSocial = member.role === "marketing" || member.role === "executive";
+  const studioMarkers = canSocial
+    ? readStudioPosts()
+        .filter((p) => (member.role === "executive" || p.memberId === member.id) && p.status === "published" && p.publishedAt)
+        .map((p) => ({ date: p.publishedAt!.slice(0, 10), label: `${p.channelBrand} post` }))
+    : [];
 
   return (
     <div className="space-y-6">
@@ -34,10 +43,13 @@ export default async function TimelinePage() {
             color: statusColor[p.status],
             sub: p.partnerIds.map((id) => getPartner(id)?.name.split(" (")[0]).filter(Boolean).join(", "),
           }))}
-          markers={deadlines.map((f) => ({
-            date: f.reportDeadline!,
-            label: `${f.source.split(" (")[0]} report`,
-          }))}
+          markers={[
+            ...deadlines.map((f) => ({
+              date: f.reportDeadline!,
+              label: `${f.source.split(" (")[0]} report`,
+            })),
+            ...studioMarkers,
+          ]}
         />
         <div className="mt-6 pt-4 border-t border-line flex flex-wrap gap-4 text-xs text-muted">
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded inline-block" style={{ background: "#0f5c4a" }} /> Active</span>

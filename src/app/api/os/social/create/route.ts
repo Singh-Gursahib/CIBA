@@ -7,11 +7,10 @@ import { canOperateSocial } from "@/lib/os/social/access";
 import { getChannel, type ChannelKey } from "@/lib/os/social/channels";
 import { generateCopy } from "@/lib/os/social/copy";
 import { insertPost } from "@/lib/os/social/store";
-import type { MediaFormat, PlatformTarget, PrivacyStatus, SocialPlatform, StudioPost } from "@/lib/os/social/types";
+import { ALL_PLATFORMS, type ApprovalStatus, type MediaFormat, type PlatformTarget, type PrivacyStatus, type SocialPlatform, type StudioPost } from "@/lib/os/social/types";
 
 export const maxDuration = 120;
 
-const PLATFORMS: SocialPlatform[] = ["youtube", "instagram"];
 const MAX_MEDIA_BYTES = 300 * 1024 * 1024;
 
 function newId(): string {
@@ -34,7 +33,9 @@ export async function POST(req: Request) {
   const privacy: PrivacyStatus = privacyRaw === "public" || privacyRaw === "unlisted" ? privacyRaw : "private";
   const projectId = String(form.get("projectId") ?? "").trim() || undefined;
   const script = String(form.get("script") ?? "").trim() || undefined;
-  const platforms = form.getAll("platforms").map(String).filter((p): p is SocialPlatform => (PLATFORMS as string[]).includes(p));
+  const scheduledForRaw = String(form.get("scheduledFor") ?? "").trim();
+  const scheduledFor = scheduledForRaw ? new Date(scheduledForRaw).toISOString() : undefined;
+  const platforms = form.getAll("platforms").map(String).filter((p): p is SocialPlatform => (ALL_PLATFORMS as string[]).includes(p));
   const media = form.get("media");
   const mediaFile = media instanceof File && media.size > 0 ? media : null;
 
@@ -56,6 +57,9 @@ export async function POST(req: Request) {
 
   const targets: PlatformTarget[] = platforms.map((platform) => ({ platform, status: "pending" }));
   const now = new Date().toISOString();
+  // Executives self-approve; Marketing drafts need an executive sign-off.
+  const selfApprove = member.role === "executive";
+  const approval: ApprovalStatus = selfApprove ? "approved" : "pending";
   const post: StudioPost = {
     id,
     memberId: member.id,
@@ -74,6 +78,10 @@ export async function POST(req: Request) {
     privacy,
     targets,
     status: mediaFile ? "ready" : "draft",
+    approval,
+    approvedBy: selfApprove ? member.id : undefined,
+    approvedAt: selfApprove ? now : undefined,
+    scheduledFor,
     createdAt: now,
     renderedAt: mediaFile ? now : undefined,
   };

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Donut, HBarChart } from "@/components/charts";
 import { currentMember } from "@/lib/os/auth";
+import { readStudioPosts } from "@/lib/os/social/read-sync";
 import {
   deadlineRadar,
   fmtCAD,
@@ -35,6 +36,18 @@ export default async function OSDashboard() {
   const fundingRecords = visibleFunding(member);
   const byStatus = (s: string) =>
     fundingRecords.filter((f) => f.status === s).reduce((n, f) => n + f.amountCAD, 0);
+  // Social Studio rollup (only for members who operate it).
+  const canSocial = member.role === "marketing" || member.role === "executive";
+  const studioPosts = canSocial
+    ? readStudioPosts().filter((p) => member.role === "executive" || p.memberId === member.id)
+    : [];
+  const studioCounts = {
+    published: studioPosts.filter((p) => p.status === "published").length,
+    scheduled: studioPosts.filter((p) => p.scheduledFor && p.status !== "published").length,
+    drafts: studioPosts.filter((p) => p.status !== "published" && !p.scheduledFor).length,
+    pending: studioPosts.filter((p) => p.approval === "pending").length,
+  };
+
   const social = visibleSocial(member);
   const channelViews = ["LinkedIn", "Instagram", "Eventbrite", "Newsletter"]
     .map((ch) => ({
@@ -141,6 +154,31 @@ export default async function OSDashboard() {
 
         {/* Right rail */}
         <div className="space-y-5">
+          {canSocial && (
+            <Link href="/os/social" className="card p-5 block hover:-translate-y-0.5 hover:shadow-md transition-all">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-sm">📣 Social Studio</h2>
+                {studioCounts.pending > 0 && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent">
+                    {studioCounts.pending} to approve
+                  </span>
+                )}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                {[
+                  { label: "Published", value: studioCounts.published },
+                  { label: "Scheduled", value: studioCounts.scheduled },
+                  { label: "Drafts", value: studioCounts.drafts },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <p className="text-xl font-bold text-brand">{s.value}</p>
+                    <p className="text-[11px] text-muted">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Link>
+          )}
+
           <div className="card p-5">
             <h2 className="font-semibold text-sm">⏰ Deadline radar</h2>
             <p className="text-xs text-muted mt-0.5 mb-3">Funder reports coming due</p>

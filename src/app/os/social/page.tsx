@@ -35,7 +35,11 @@ export default async function SocialPage() {
     key: c.key,
     brand: c.brand,
     blurb: c.blurb,
-    platforms: { youtube: platformConfigured(c.key, "youtube"), instagram: platformConfigured(c.key, "instagram") },
+    platforms: {
+      youtube: platformConfigured(c.key, "youtube"),
+      instagram: platformConfigured(c.key, "instagram"),
+      tiktok: platformConfigured(c.key, "tiktok"),
+    },
   }));
   const projects = visibleProjects(member).map((p) => ({ id: p.id, name: p.name }));
 

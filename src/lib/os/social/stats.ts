@@ -6,7 +6,7 @@ import { allChannels, getChannel, channelCreds, type ChannelKey } from "./channe
 import { fetchChannelStats, fetchVideoStats } from "./youtube";
 import { fetchReelInsights } from "./instagram";
 import { platformConfigured } from "./publish";
-import type { StudioPost } from "./types";
+import type { SocialPlatform, StudioPost } from "./types";
 
 export interface ChannelStatsVM {
   channelKey: ChannelKey;
@@ -23,7 +23,7 @@ export interface Metric {
   value: number;
 }
 export interface PostInsight {
-  platform: "youtube" | "instagram";
+  platform: SocialPlatform;
   externalId: string;
   url?: string;
   metrics: Metric[];
@@ -72,24 +72,29 @@ export async function getPostInsights(post: StudioPost): Promise<PostInsight[]> 
       const base = { platform: t.platform, externalId: t.externalId!, url: t.url };
       if (mock) {
         const s = t.externalId!;
-        return {
-          ...base,
-          metrics:
-            t.platform === "youtube"
+        const metrics =
+          t.platform === "youtube"
+            ? [
+                { label: "Views", value: seeded(s + "v", 200, 90000) },
+                { label: "Likes", value: seeded(s + "l", 10, 5000) },
+                { label: "Comments", value: seeded(s + "c", 0, 400) },
+              ]
+            : t.platform === "instagram"
               ? [
-                  { label: "Views", value: seeded(s + "v", 200, 90000) },
-                  { label: "Likes", value: seeded(s + "l", 10, 5000) },
-                  { label: "Comments", value: seeded(s + "c", 0, 400) },
-                ]
-              : [
                   { label: "Views", value: seeded(s + "v", 200, 90000) },
                   { label: "Reach", value: seeded(s + "r", 150, 70000) },
                   { label: "Likes", value: seeded(s + "l", 10, 5000) },
                   { label: "Saves", value: seeded(s + "sv", 0, 900) },
-                ],
-        };
+                ]
+              : [
+                  { label: "Views", value: seeded(s + "v", 200, 120000) },
+                  { label: "Likes", value: seeded(s + "l", 10, 8000) },
+                  { label: "Shares", value: seeded(s + "sh", 0, 1200) },
+                ];
+        return { ...base, metrics };
       }
       try {
+        if (t.platform === "tiktok") return { ...base, metrics: [] }; // no insights API ported
         if (t.platform === "youtube") {
           const [v] = await fetchVideoStats([t.externalId!], undefined, creds.youtube);
           return {

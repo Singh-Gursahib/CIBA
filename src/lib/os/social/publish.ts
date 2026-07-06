@@ -7,6 +7,7 @@ import { DATA_DIR, isMockPublish, videoPublicBaseUrl, contentCdnRepo, contentCdn
 import { getChannel, channelCreds, type ChannelKey } from "./channels";
 import { isYouTubeConfigured, publishToYouTube } from "./youtube";
 import { isInstagramConfigured, publishReel } from "./instagram";
+import { isTikTokConfigured, tiktokCreds, publishTikTok } from "./tiktok";
 import type { SocialPlatform, StudioPost } from "./types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -17,8 +18,11 @@ export interface PublishResult {
 }
 
 export function platformConfigured(channelKey: ChannelKey, platform: SocialPlatform): boolean {
-  const creds = channelCreds(getChannel(channelKey));
-  return platform === "youtube" ? isYouTubeConfigured(creds.youtube) : isInstagramConfigured(creds.instagram);
+  const channel = getChannel(channelKey);
+  const creds = channelCreds(channel);
+  if (platform === "youtube") return isYouTubeConfigured(creds.youtube);
+  if (platform === "instagram") return isInstagramConfigured(creds.instagram);
+  return isTikTokConfigured(tiktokCreds(channel.envPrefix));
 }
 
 function withHashtags(text: string, hashtags: string[]): string {
@@ -75,6 +79,15 @@ async function publishInstagram(post: StudioPost): Promise<PublishResult> {
   return { externalId: id };
 }
 
+async function publishTiktok(post: StudioPost): Promise<PublishResult> {
+  if (!post.mediaPath) throw new Error("No media to publish.");
+  const mediaAbs = path.join(DATA_DIR, post.mediaPath);
+  const videoUrl = mediaPublicUrl(mediaAbs, post.mediaPath);
+  const creds = tiktokCreds(getChannel(post.channelKey).envPrefix);
+  const id = await publishTikTok({ videoUrl, title: withHashtags(post.caption, post.hashtags) }, creds);
+  return { externalId: id };
+}
+
 export async function publishToPlatform(platform: SocialPlatform, post: StudioPost): Promise<PublishResult> {
   if (isMockPublish()) {
     await sleep(1400);
@@ -82,10 +95,15 @@ export async function publishToPlatform(platform: SocialPlatform, post: StudioPo
       const id = mockId("ytmock");
       return { externalId: id, url: `https://www.youtube.com/watch?v=${id}` };
     }
-    const id = mockId("igmock");
-    return { externalId: id, url: `https://www.instagram.com/reel/${id}` };
+    if (platform === "instagram") {
+      const id = mockId("igmock");
+      return { externalId: id, url: `https://www.instagram.com/reel/${id}` };
+    }
+    const id = mockId("ttmock");
+    return { externalId: id, url: `https://www.tiktok.com/@ciba/video/${id}` };
   }
   if (!post.mediaPath) throw new Error("No media to publish.");
   if (platform === "youtube") return publishYouTube(post, path.join(DATA_DIR, post.mediaPath));
-  return publishInstagram(post);
+  if (platform === "instagram") return publishInstagram(post);
+  return publishTiktok(post);
 }

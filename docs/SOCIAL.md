@@ -17,6 +17,26 @@ Gated to the **Marketing Coordinator** (Jake) and the **Executive Director**
 API route (`canOperateSocial`), not just the UI. Executives see all members'
 posts; others see their own.
 
+## Approval workflow
+
+Marketing drafts need an **Executive sign-off** before anything goes public.
+A Marketing-created post starts `approval: "pending"`; the Executive approves or
+rejects it (`POST /posts/[id]/approve`, `canApprove`), and **publish is blocked
+until approved** (enforced server-side). Executive-created posts auto-approve.
+
+## Scheduling & calendar
+
+A post can carry a `scheduledFor` time. Approved, scheduled posts publish when
+due via `POST /run-scheduled` (a manual "Publish due" button on the content
+calendar; in production this would be cron). The Studio shows a month-grid
+**content calendar** (scheduled = amber, published = teal).
+
+## Platforms
+
+YouTube (direct upload), Instagram (public-URL Reel), and **TikTok**
+(PULL_FROM_URL, `src/lib/os/social/tiktok.ts`). All three are demo-capable;
+real TikTok needs per-channel `TIKTOK_*` tokens + a public media host.
+
 ## Flow
 
 1. **Compose** — pick a channel (Speed Mania / Goal Mania / Embertide), optionally
@@ -47,6 +67,11 @@ stage. See `.env.example`.
   env-config status; the `int-buffer` seed entry became "Social Studio".
 - **Project workspaces:** the "📣 Social & outreach" card lists Studio videos
   linked to that collaboration.
+- **Dashboard:** a Social Studio tile (published / scheduled / drafts + a
+  "to approve" badge for executives), scoped to the member.
+- **Brain Map:** a Social Studio hub + channel nodes, linked to the
+  collaborations they promote (scoped to social operators).
+- **Timeline:** published posts appear as markers.
 - **AI assistant:** `scopedContext()` and the demo answers surface the member's
   Studio posts — automatically permission-scoped.
 

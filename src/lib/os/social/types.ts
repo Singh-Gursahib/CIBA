@@ -4,12 +4,17 @@
 
 import type { ChannelKey } from "./channels";
 
-export type SocialPlatform = "youtube" | "instagram";
+export type SocialPlatform = "youtube" | "instagram" | "tiktok";
 
-export const PLATFORM_META: Record<SocialPlatform, { label: string; noun: string }> = {
-  youtube: { label: "YouTube", noun: "video" },
-  instagram: { label: "Instagram", noun: "reel" },
+export const PLATFORM_META: Record<SocialPlatform, { label: string; noun: string; icon: string }> = {
+  youtube: { label: "YouTube", noun: "video", icon: "▶" },
+  instagram: { label: "Instagram", noun: "reel", icon: "◈" },
+  tiktok: { label: "TikTok", noun: "video", icon: "♪" },
 };
+
+export const ALL_PLATFORMS: SocialPlatform[] = ["youtube", "instagram", "tiktok"];
+
+export type ApprovalStatus = "pending" | "approved" | "rejected";
 
 export type MediaFormat = "short" | "video";
 
@@ -61,6 +66,16 @@ export interface StudioPost {
 
   status: PostStatus;
   error?: string;
+
+  // Approval workflow: Marketing drafts need an Executive sign-off before
+  // anything can be published. Executive-created posts auto-approve.
+  approval: ApprovalStatus;
+  approvedBy?: string; // member id
+  approvedAt?: string;
+  rejectionReason?: string;
+
+  /** If set, the post publishes at this time (via run-scheduled), not on create. */
+  scheduledFor?: string;
 
   createdAt: string;
   startedAt?: string;

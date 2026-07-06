@@ -13,6 +13,7 @@ import {
   SOCIAL,
   VENTURES,
 } from "./seed";
+import { readStudioPosts } from "./social/read-sync";
 import type { Doc, FundingRecord, Integration, Member, Partner, Project, SocialPost, Venture } from "./types";
 
 export const getMember = (id: string): Member | undefined => MEMBERS.find((m) => m.id === id);
@@ -157,6 +158,28 @@ export function brainMap(member: Member): { nodes: GraphNode[]; links: GraphLink
     for (const pid of v.projectIds) {
       if (canAccessProject(member, pid) && seen.has(pid)) {
         links.push({ source: pid, target: v.id, kind: "supports" });
+      }
+    }
+  }
+
+  // Social Studio layer — only for members who operate it (marketing + exec).
+  if (member.role === "marketing" || member.role === "executive") {
+    const posts = readStudioPosts().filter((p) => member.role === "executive" || p.memberId === member.id);
+    if (posts.length) {
+      add({ id: "social-hub", label: "Social Studio", type: "integration", meta: "YouTube / Instagram / TikTok" });
+      links.push({ source: "ciba", target: "social-hub", kind: "publishes via" });
+      const channels = new Map<string, string>();
+      for (const p of posts) channels.set(p.channelKey, p.channelBrand);
+      for (const [key, brand] of channels) {
+        const nid = `channel-${key}`;
+        add({ id: nid, label: brand, type: "integration", meta: "channel" });
+        links.push({ source: "social-hub", target: nid, kind: "runs" });
+      }
+      for (const p of posts) {
+        // Link a post's channel to the collaboration it promotes, when visible.
+        if (p.projectId && seen.has(p.projectId)) {
+          links.push({ source: `channel-${p.channelKey}`, target: p.projectId, kind: "promotes" });
+        }
       }
     }
   }
