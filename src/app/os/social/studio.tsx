@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CalendarDays, Users, Eye, Film } from "lucide-react";
 import {
   ALL_PLATFORMS,
   FORMAT_META,
@@ -215,7 +216,7 @@ function Calendar({ posts, onRan }: { posts: StudioPost[]; onRan: () => void }) 
   return (
     <div className="card p-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-semibold text-sm">📅 Content calendar</span>
+        <span className="font-semibold text-sm flex items-center gap-1.5"><CalendarDays className="w-4 h-4 text-brand" strokeWidth={1.75} /> Content calendar</span>
         <div className="flex items-center gap-1 ml-2">
           <button className="btn btn-ghost !py-1 !px-2 text-xs" onClick={() => setCursor((c) => (!c ? c : c.m === 0 ? { y: c.y - 1, m: 11 } : { y: c.y, m: c.m - 1 }))}>
             ‹
@@ -670,9 +671,9 @@ function ChannelStats() {
                 <p className="text-[11px] text-muted mt-1">Not connected</p>
               ) : (
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[12px] text-muted mt-1.5">
-                  <span>👥 {fmt(s.subscribers)}</span>
-                  <span>👁 {fmt(s.views ?? 0)}</span>
-                  <span>🎬 {fmt(s.videoCount ?? 0)}</span>
+                  <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" /> {fmt(s.subscribers)}</span>
+                  <span className="inline-flex items-center gap-1"><Eye className="w-3 h-3" /> {fmt(s.views ?? 0)}</span>
+                  <span className="inline-flex items-center gap-1"><Film className="w-3 h-3" /> {fmt(s.videoCount ?? 0)}</span>
                 </div>
               )}
             </div>

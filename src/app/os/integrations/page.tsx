@@ -15,7 +15,7 @@ const kindLabel: Record<string, string> = {
   llm: "AI Layer",
 };
 
-import { Banknote, Megaphone, Database, Users, Sparkles, type LucideIcon } from "lucide-react";
+import { Banknote, Megaphone, Database, Users, Sparkles, Zap, type LucideIcon } from "lucide-react";
 
 const kindIcon: Record<string, LucideIcon> = {
   financing: Banknote,
@@ -139,7 +139,7 @@ export default async function IntegrationsPage() {
       {/* Live connections — real APIs, activate with credentials */}
       <div className="card p-5 border-brand/30 bg-brand-soft/20">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h2 className="font-semibold">⚡ Live connections</h2>
+          <h2 className="font-semibold flex items-center gap-1.5"><Zap className="w-4 h-4 text-accent" strokeWidth={1.75} /> Live connections</h2>
           <span className="text-[11px] text-muted">
             Real OAuth &amp; APIs — drop credentials in <code className="bg-bg px-1 rounded">.env.local</code> and click connect
           </span>

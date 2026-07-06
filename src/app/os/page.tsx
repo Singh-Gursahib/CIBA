@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Donut, HBarChart } from "@/components/charts";
 import { currentMember } from "@/lib/os/auth";
-import { Landmark } from "lucide-react";
+import { Landmark, Megaphone, Clock } from "lucide-react";
 import { readStudioPosts } from "@/lib/os/social/read-sync";
 import { canUseGrants } from "@/lib/os/grants/access";
 import { listDiscoveries, listProposals } from "@/lib/os/grants/store";
@@ -187,7 +187,7 @@ export default async function OSDashboard() {
           {canSocial && (
             <Link href="/os/social" className="card p-5 block hover:-translate-y-0.5 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-sm">📣 Social Studio</h2>
+                <h2 className="font-semibold text-sm flex items-center gap-1.5"><Megaphone className="w-4 h-4 text-brand" strokeWidth={1.75} /> Social Studio</h2>
                 {studioCounts.pending > 0 && (
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent">
                     {studioCounts.pending} to approve
@@ -210,7 +210,7 @@ export default async function OSDashboard() {
           )}
 
           <div className="card p-5">
-            <h2 className="font-semibold text-sm">⏰ Deadline radar</h2>
+            <h2 className="font-semibold text-sm flex items-center gap-1.5"><Clock className="w-4 h-4 text-brand" strokeWidth={1.75} /> Deadline radar</h2>
             <p className="text-xs text-muted mt-0.5 mb-3">Funder reports coming due</p>
             <div className="space-y-2.5">
               {deadlines.length === 0 && <p className="text-sm text-muted">No visible deadlines.</p>}

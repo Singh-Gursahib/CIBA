@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { PROGRAMS, SERVICE_AREAS, STAGES } from "@/lib/ciba";
 import type { TriageResult } from "@/lib/schemas";
 
@@ -171,7 +172,7 @@ export default function IntakePage() {
                 <div>
                   <p className="label text-brand-ink">Strengths</p>
                   <ul className="text-sm space-y-1 text-ink/80">
-                    {result.strengths.map((s, i) => <li key={i}>✓ {s}</li>)}
+                    {result.strengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><Check className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand" /> {s}</li>)}
                   </ul>
                 </div>
                 <div>

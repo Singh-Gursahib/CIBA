@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Eye } from "lucide-react";
 
 export function ImpersonationBanner({ adminName, viewingName }: { adminName: string; viewingName: string }) {
   const router = useRouter();
   return (
     <div className="mb-4 rounded-xl bg-accent-soft border border-accent/30 px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
       <p>
-        <span className="font-semibold text-accent">👁 Admin view:</span>{" "}
+        <span className="font-semibold text-accent inline-flex items-center gap-1 align-middle"><Eye className="w-3.5 h-3.5" /> Admin view:</span>{" "}
         {adminName} viewing as <span className="font-semibold">{viewingName}</span> — you see exactly what they see.
       </p>
       <button
@@ -40,7 +41,7 @@ export function ViewAsButton({ memberId, disabled }: { memberId: string; disable
         router.refresh();
       }}
     >
-      👁 View as
+      <Eye className="w-3.5 h-3.5" /> View as
     </button>
   );
 }

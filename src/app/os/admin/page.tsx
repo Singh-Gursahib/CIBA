@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { currentMember, impersonator } from "@/lib/os/auth";
 import { ACTIVITY, INTEGRATIONS, MEMBERS, PROJECTS } from "@/lib/os/seed";
 import { getMember } from "@/lib/os/store";
@@ -11,8 +12,8 @@ export default async function AdminPage() {
   if (!isExec) {
     return (
       <div className="card p-10 text-center">
-        <p className="text-3xl">🔒</p>
-        <h1 className="mt-2 text-xl font-bold">Admin only</h1>
+        <div className="grid place-items-center w-12 h-12 rounded-full bg-brand-soft mx-auto"><Lock className="w-5 h-5 text-brand" strokeWidth={1.75} /></div>
+        <h1 className="mt-3 text-xl font-bold">Admin only</h1>
         <p className="mt-1 text-sm text-muted">
           Only the Executive Director can manage accounts and view the audit log.
         </p>

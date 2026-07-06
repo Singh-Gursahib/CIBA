@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Banknote, Megaphone, Film, FolderOpen, Lock, Rocket } from "lucide-react";
 import { currentMember } from "@/lib/os/auth";
+import { SectionTitle } from "@/components/ui";
 import { readStudioPosts } from "@/lib/os/context";
 import {
   fmtCAD,
@@ -103,7 +105,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       <div className="grid lg:grid-cols-2 gap-6 items-start">
         {/* Funding */}
         <div className="card p-5">
-          <h2 className="font-semibold">💰 Funding</h2>
+          <SectionTitle icon={<Banknote />}>Funding</SectionTitle>
           <div className="mt-3 space-y-3">
             {funding.length === 0 && <p className="text-sm text-muted">No funding records visible to you.</p>}
             {funding.map((f) => (
@@ -126,7 +128,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* Social */}
         <div className="card p-5">
-          <h2 className="font-semibold">📣 Social & outreach</h2>
+          <SectionTitle icon={<Megaphone />}>Social & outreach</SectionTitle>
           <div className="mt-3 space-y-3">
             {social.length === 0 && <p className="text-sm text-muted">No posts for this collaboration.</p>}
             {social.map((s) => (
@@ -158,7 +160,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                     {studioVideos.map((v) => (
                       <div key={v.id} className="border border-line rounded-xl p-3 flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">🎬 {v.title}</p>
+                          <p className="text-sm font-medium truncate flex items-center gap-1.5"><Film className="w-3.5 h-3.5 text-muted shrink-0" /> {v.title}</p>
                           <p className="text-[11px] text-muted mt-0.5">
                             {v.channelBrand} · {v.format}
                             {v.targets?.length ? ` · ${v.targets.map((t) => t.platform).join(", ")}` : ""}
@@ -181,7 +183,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* Documents */}
         <div className="card p-5">
-          <h2 className="font-semibold">🗂 Documents</h2>
+          <SectionTitle icon={<FolderOpen />}>Documents</SectionTitle>
           <p className="text-xs text-muted mt-0.5">
             Sensitive documents are visible only to the project lead and executives.
           </p>
@@ -193,7 +195,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 <div key={d.id} className="py-2.5 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium">
-                      {d.name} {d.sensitive && <span className="text-[10px] text-red-600 font-semibold align-middle">🔒 sensitive</span>}
+                      {d.name} {d.sensitive && <span className="text-[10px] text-red-600 font-semibold inline-flex items-center gap-0.5 align-middle"><Lock className="w-2.5 h-2.5" /> sensitive</span>}
                     </p>
                     <p className="text-xs text-muted">{d.type} · updated {d.updated} · {owner?.name}</p>
                   </div>
@@ -205,7 +207,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* Ventures */}
         <div className="card p-5">
-          <h2 className="font-semibold">🚀 Ventures in this program</h2>
+          <SectionTitle icon={<Rocket />}>Ventures in this program</SectionTitle>
           <div className="mt-3 space-y-3">
             {ventures.length === 0 && <p className="text-sm text-muted">No ventures recorded.</p>}
             {ventures.map((v) => (

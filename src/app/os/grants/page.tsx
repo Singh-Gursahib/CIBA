@@ -1,4 +1,4 @@
-import { Landmark } from "lucide-react";
+import { Landmark, Lock } from "lucide-react";
 import { currentMember } from "@/lib/os/auth";
 import { canUseGrants } from "@/lib/os/grants/access";
 import { FUNDERS } from "@/lib/os/grants/seed";
@@ -14,7 +14,7 @@ export default async function GrantsPage() {
       <div className="space-y-5">
         <PageHeader title="Grants" subtitle="Find funding and build proposals." icon={<Landmark />} />
         <div className="card p-8 text-center">
-          <p className="text-3xl">🔒</p>
+          <div className="grid place-items-center w-12 h-12 rounded-full bg-brand-soft mx-auto"><Lock className="w-5 h-5 text-brand" strokeWidth={1.75} /></div>
           <p className="mt-3 font-semibold">Grants is scoped to Funding & Executive</p>
           <p className="text-sm text-muted mt-1 max-w-md mx-auto">
             The grant locator and proposal builder are limited to the Partnerships & Funding Lead (Sofia) and the

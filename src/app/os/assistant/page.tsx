@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
@@ -60,7 +61,7 @@ export default function AssistantPage() {
         <div className="flex-1 space-y-4">
           {msgs.length === 0 && (
             <div className="text-center py-10">
-              <p className="text-2xl">✦</p>
+              <Sparkles className="w-7 h-7 text-brand mx-auto" strokeWidth={1.5} />
               <p className="text-sm text-muted mt-2 mb-5">Ask about your collaborations, funding, deadlines, or ventures.</p>
               <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
                 {SUGGESTIONS.map((s) => (

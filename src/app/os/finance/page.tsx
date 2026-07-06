@@ -1,3 +1,4 @@
+import { Check, TriangleAlert, Lock } from "lucide-react";
 import { Donut, GroupedBars, LineChart } from "@/components/charts";
 import { currentMember } from "@/lib/os/auth";
 import {
@@ -46,8 +47,8 @@ export default async function FinancePage() {
   if (!hasAccess) {
     return (
       <div className="card p-10 text-center">
-        <p className="text-3xl">🔒</p>
-        <h1 className="mt-2 text-xl font-bold">Finance is restricted</h1>
+        <div className="grid place-items-center w-12 h-12 rounded-full bg-brand-soft mx-auto"><Lock className="w-5 h-5 text-brand" strokeWidth={1.75} /></div>
+        <h1 className="mt-3 text-xl font-bold">Finance is restricted</h1>
         <p className="mt-1 text-sm text-muted max-w-md mx-auto">
           Only members with financing access (Partnerships &amp; Funding Lead, Executive Director) can view
           statements and forecasts. Switch member to Sofia or Sachin to see this module.
@@ -140,8 +141,8 @@ export default async function FinancePage() {
           <p className="label mt-4">Net assets</p>
           <Lines items={BALANCE_SHEET.netAssets} />
           <TotalRow label="Total liabilities + net assets" amount={curLiab + netAssets} />
-          <p className="mt-3 text-[11px] text-muted">
-            ✓ Balances — deferred revenue reflects restricted grant portions not yet spent (Discovery Foundation, KPMG).
+          <p className="mt-3 text-[11px] text-muted inline-flex items-start gap-1">
+            <Check className="w-3 h-3 mt-0.5 shrink-0 text-brand" /> Balances — deferred revenue reflects restricted grant portions not yet spent (Discovery Foundation, KPMG).
           </p>
         </div>
       </div>
@@ -224,8 +225,8 @@ export default async function FinancePage() {
             );
           })}
         </div>
-        <p className="mt-4 text-xs text-muted">
-          ⚠️ September assumes KPMG sponsorship renewal ({fmtCAD(12500)}) — flagged as expected, not committed.
+        <p className="mt-4 text-xs text-muted inline-flex items-start gap-1">
+          <TriangleAlert className="w-3.5 h-3.5 mt-0.5 shrink-0 text-accent" /> September assumes KPMG sponsorship renewal ({fmtCAD(12500)}), flagged as expected, not committed.
         </p>
       </div>
     </div>

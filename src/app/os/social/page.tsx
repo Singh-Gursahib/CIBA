@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { currentMember } from "@/lib/os/auth";
 import { visibleProjects } from "@/lib/os/store";
 import { canOperateSocial, visibleStudioPosts } from "@/lib/os/social/access";
@@ -19,7 +20,7 @@ export default async function SocialPage() {
           <p className="text-sm text-muted mt-1">Create and publish video content to YouTube and Instagram.</p>
         </div>
         <div className="card p-8 text-center">
-          <p className="text-3xl">🔒</p>
+          <div className="grid place-items-center w-12 h-12 rounded-full bg-brand-soft mx-auto"><Lock className="w-5 h-5 text-brand" strokeWidth={1.75} /></div>
           <p className="mt-3 font-semibold">This studio is scoped to Marketing</p>
           <p className="text-sm text-muted mt-1 max-w-md mx-auto">
             Creating and publishing social content is limited to the Marketing Coordinator (Jake Williams) and the

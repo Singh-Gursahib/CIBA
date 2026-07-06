@@ -48,6 +48,16 @@ export function PageHeader({
   );
 }
 
+/** Card/section heading with a leading icon — replaces the emoji headers. */
+export function SectionTitle({ icon, children, className = "" }: { icon?: ReactNode; children: ReactNode; className?: string }) {
+  return (
+    <h2 className={`font-semibold flex items-center gap-2 ${className}`}>
+      {icon && <span className="text-brand [&>svg]:w-[18px] [&>svg]:h-[18px]">{icon}</span>}
+      {children}
+    </h2>
+  );
+}
+
 export function StatTile({
   label,
   value,
