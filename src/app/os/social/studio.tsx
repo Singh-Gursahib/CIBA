@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, Users, Eye, Film } from "lucide-react";
+import { CalendarDays, Users, Eye, Film, Upload } from "lucide-react";
 import {
   ALL_PLATFORMS,
   FORMAT_META,
@@ -297,7 +297,7 @@ function Composer({
 
   const submit = async () => {
     setErr("");
-    if (!brief.trim()) return setErr("Describe the video first.");
+    if (!brief.trim() && !file) return setErr("Upload a video, or describe one to auto-render.");
     if (selected.size === 0) return setErr("Choose at least one platform.");
     setBusy(true);
     try {
@@ -353,6 +353,30 @@ function Composer({
         </div>
       </div>
 
+      {/* Upload-your-own-video — a first-class path, not buried below the fold. */}
+      <div>
+        <label className="label">Upload a video</label>
+        <input ref={fileRef} type="file" accept="video/mp4,video/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className={`w-full rounded-lg border-2 border-dashed px-3 py-4 text-center transition ${
+            file ? "border-brand bg-brand-soft" : "border-line hover:border-brand hover:bg-bg"
+          }`}
+        >
+          <Upload className="w-5 h-5 mx-auto text-brand" />
+          <span className="block text-sm font-semibold mt-1.5">{file ? file.name : "Choose a video to upload"}</span>
+          <span className="block text-[11px] text-muted mt-0.5">
+            {file ? "Tap to change · ready to publish" : "mp4 up to 300 MB — or leave empty to auto-render from a brief"}
+          </span>
+        </button>
+        {file && (
+          <button type="button" className="text-[11px] text-muted hover:text-ink mt-1.5" onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ""; }}>
+            Remove video
+          </button>
+        )}
+      </div>
+
       {projects.length > 0 && (
         <div>
           <label className="label">Collaboration (optional)</label>
@@ -368,7 +392,7 @@ function Composer({
       )}
 
       <div>
-        <label className="label">What is the video about?</label>
+        <label className="label">{file ? "What is the video about? (optional)" : "What is the video about?"}</label>
         <textarea
           className="field min-h-20"
           value={brief}
@@ -447,21 +471,10 @@ function Composer({
         <p className="text-[11px] text-muted mt-1">Leave empty to publish manually once approved.</p>
       </div>
 
-      <div>
-        <label className="label">Media</label>
-        <input ref={fileRef} type="file" accept="video/mp4,video/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        <div className="flex items-center gap-2">
-          <button type="button" className="btn btn-ghost !py-1.5 !px-3 text-xs" onClick={() => fileRef.current?.click()}>
-            {file ? "Change file" : "Upload a video"}
-          </button>
-          <span className="text-xs text-muted truncate">{file ? file.name : "Optional — leave empty to auto-render."}</span>
-        </div>
-      </div>
-
       {err && <p className="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">{err}</p>}
 
       <button className="btn btn-primary w-full" disabled={busy} onClick={submit}>
-        {busy ? <span className="spinner" /> : "Create draft"}
+        {busy ? <span className="spinner" /> : file ? "Upload & create post" : "Create draft"}
       </button>
     </div>
   );
@@ -650,9 +663,12 @@ function ChannelStats() {
       setLoading(false);
     }
   };
-  // Pull live channel numbers on mount so the panel is never blank.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void load(); }, []);
+  // Pull live channel numbers on mount so the panel is never blank. Deferred a
+  // tick so we're not setting state synchronously inside the effect body.
+  useEffect(() => {
+    const t = setTimeout(() => void load(), 0);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <div className="card p-4">
       <div className="flex items-center gap-2">

@@ -42,13 +42,15 @@ export async function POST(req: Request) {
   const media = form.get("media");
   const mediaFile = media instanceof File && media.size > 0 ? media : null;
 
-  if (!brief) return NextResponse.json({ error: "Describe the video first." }, { status: 400 });
+  // A brief is only needed to auto-render/auto-write; if you upload your own
+  // video, describing it is optional.
+  if (!brief && !mediaFile) return NextResponse.json({ error: "Upload a video, or describe one to auto-render." }, { status: 400 });
   if (platforms.length === 0) return NextResponse.json({ error: "Choose at least one platform." }, { status: 400 });
   if (mediaFile && mediaFile.size > MAX_MEDIA_BYTES) return NextResponse.json({ error: "Video is over the 300 MB limit." }, { status: 400 });
   if (mediaFile && !mediaFile.type.startsWith("video/")) return NextResponse.json({ error: "Upload a video file (mp4)." }, { status: 400 });
 
   const id = newId();
-  const copy = await generateCopy(channel, brief, format);
+  const copy = await generateCopy(channel, brief || `New ${channel.brand} post`, format);
 
   let mediaPath: string | undefined;
   if (mediaFile) {
