@@ -3,7 +3,16 @@
 // statement of operations (income statement), monthly history, and a 3-month
 // cash forecast driven by known grant tranches and payroll.
 
+import type { Member } from "./types";
+
 export type LineItem = { label: string; amount: number; note?: string };
+
+/** Finance statements are visible to whoever can operate the QuickBooks ledger
+ *  (the Funding lead + the Executive). Single source of truth for the Finance
+ *  page gate and the sidebar. */
+export function canUseFinance(member: Member): boolean {
+  return member.integrationAccess === "*" || member.integrationAccess.includes("int-quickbooks");
+}
 
 export const AS_OF = "2026-06-30";
 export const FISCAL_YTD = "Apr 1 – Jun 30, 2026 (FY27 Q1)";

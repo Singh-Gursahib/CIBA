@@ -1,31 +1,40 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Network, Inbox, CalendarDays, Rocket, Banknote, Landmark, Palette, Megaphone, Cable, Waypoints, Sparkles, Settings } from "lucide-react";
 import { currentMember, impersonator } from "@/lib/os/auth";
 import { ToastProvider } from "@/components/toast";
 import { ImpersonationBanner } from "./impersonation-banner";
 import { SwitchMemberButton } from "./switch-member";
+import { SidebarNav } from "./sidebar-nav";
+import type { Member } from "@/lib/os/types";
+import { canUseGrants } from "@/lib/os/grants/access";
+import { canUseMarketing } from "@/lib/os/marketing/access";
+import { canOperateSocial } from "@/lib/os/social/access";
+import { canUseFinance } from "@/lib/os/finance";
 
-const NAV = [
-  { href: "/os", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/os/brain-map", label: "Brain Map", icon: Network },
-  { href: "/os/knowledge", label: "Knowledge", icon: Waypoints },
-  { href: "/os/inbox", label: "Inbox", icon: Inbox },
-  { href: "/os/timeline", label: "Timeline", icon: CalendarDays },
-  { href: "/os/ventures", label: "Ventures", icon: Rocket },
-  { href: "/os/grants", label: "Grants", icon: Landmark },
-  { href: "/os/finance", label: "Finance", icon: Banknote },
-  { href: "/os/marketing", label: "Marketing Studio", icon: Palette },
-  { href: "/os/social", label: "Social Studio", icon: Megaphone },
-  { href: "/os/integrations", label: "Integrations", icon: Cable },
-  { href: "/os/assistant", label: "AI Assistant", icon: Sparkles },
-  { href: "/os/admin", label: "Admin", icon: Settings },
+// Authorization source of truth for the sidebar: which modules a member may
+// enter. Presentation (icons, grouping, active state) lives in <SidebarNav>.
+// `show` omitted = visible to everyone. Keeping this server-side means the
+// permission rules never ship to the browser.
+const NAV_ACCESS: { href: string; show?: (m: Member) => boolean }[] = [
+  { href: "/os" },
+  { href: "/os/brain-map" },
+  { href: "/os/knowledge" },
+  { href: "/os/inbox" },
+  { href: "/os/timeline" },
+  { href: "/os/ventures" },
+  { href: "/os/grants", show: canUseGrants },
+  { href: "/os/finance", show: canUseFinance },
+  { href: "/os/marketing", show: canUseMarketing },
+  { href: "/os/social", show: canOperateSocial },
+  { href: "/os/integrations" },
+  { href: "/os/assistant" },
+  { href: "/os/admin", show: (m) => m.role === "executive" },
 ];
 
 export default async function OSLayout({ children }: { children: React.ReactNode }) {
   const member = await currentMember();
   if (!member) redirect("/os-login");
   const admin = await impersonator();
+  const allowedHrefs = NAV_ACCESS.filter((n) => !n.show || n.show(member)).map((n) => n.href);
 
   return (
     <ToastProvider>
@@ -44,17 +53,7 @@ export default async function OSLayout({ children }: { children: React.ReactNode
               <p className="text-xs text-muted truncate">{member.title}</p>
             </div>
           </div>
-          <nav className="mt-3 space-y-0.5">
-            {NAV.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-brand-soft text-ink/80 hover:text-brand-ink transition"
-              >
-                <n.icon className="w-[18px] h-[18px] text-muted" strokeWidth={1.75} /> {n.label}
-              </Link>
-            ))}
-          </nav>
+          <SidebarNav allowedHrefs={allowedHrefs} />
           <div className="mt-3 pt-3 border-t border-line">
             <SwitchMemberButton />
           </div>

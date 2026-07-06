@@ -8,6 +8,7 @@ import {
   FORECAST,
   INCOME_STATEMENT,
   MONTHLY,
+  canUseFinance,
   forecastSummary,
   runwayMonths,
   sum,
@@ -42,7 +43,7 @@ function TotalRow({ label, amount }: { label: string; amount: number }) {
 
 export default async function FinancePage() {
   const member = (await currentMember())!;
-  const hasAccess = member.integrationAccess === "*" || member.integrationAccess.includes("int-quickbooks");
+  const hasAccess = canUseFinance(member);
 
   if (!hasAccess) {
     return (
