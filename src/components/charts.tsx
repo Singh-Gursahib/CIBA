@@ -263,16 +263,41 @@ export function Timeline({
         })}
       </div>
 
-      {markers.length > 0 && (
-        <div className="relative h-8 mt-2">
-          {markers.map((m) => (
-            <div key={m.label} className="absolute -translate-x-1/2 flex flex-col items-center" style={{ left: `${pct(m.date)}%` }} title={`${m.label} — ${m.date}`}>
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white shadow" />
-              <span className="text-[9px] text-muted mt-0.5 whitespace-nowrap max-w-24 truncate">{m.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {markers.length > 0 && (() => {
+        // Markers close together in time would stack their labels on top of one
+        // another. Pack each into the first "lane" (row) where it clears the
+        // previous label, so collisions drop to a new line instead of smearing.
+        const ROW = 15; // px per lane
+        const gap = (label: string) => Math.min(24, 3 + label.length * 0.55); // approx label half-width, in % of track
+        const laneEnd: number[] = []; // right edge (in %) of the last label placed in each lane
+        const placed = markers
+          .map((m) => ({ ...m, p: pct(m.date) }))
+          .sort((a, b) => a.p - b.p)
+          .map((m) => {
+            const half = gap(m.label);
+            let lane = laneEnd.findIndex((edge) => m.p - half >= edge);
+            if (lane === -1) lane = laneEnd.length;
+            laneEnd[lane] = m.p + half + 1;
+            return { ...m, lane };
+          });
+        const laneCount = Math.max(1, laneEnd.length);
+        return (
+          <div className="relative mt-2" style={{ height: 16 + laneCount * ROW }}>
+            {placed.map((m, i) => (
+              <div
+                key={`${m.date}-${i}`}
+                className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
+                style={{ left: `${m.p}%` }}
+                title={`${m.label} — ${m.date}`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white shadow z-10 shrink-0" />
+                <span className="w-px bg-red-200" style={{ height: m.lane * ROW }} />
+                <span className="text-[9px] text-muted leading-none whitespace-nowrap">{m.label}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
