@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import { generateText } from "@/lib/ai/gemini";
 import { stripEmDashes } from "@/lib/ai/sanitize";
 import { mockProposal } from "@/lib/ai/mock-proposal";
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const slug = `${slugify(title)}-${Date.now().toString(36).slice(-4)}`;
 
   let markdown: string;
-  if (isMockAI()) {
+  if (isMockText()) {
     markdown = mockProposal({ discovery, answers, title });
   } else {
     const related = discovery.fit?.relatedDocs ?? [];

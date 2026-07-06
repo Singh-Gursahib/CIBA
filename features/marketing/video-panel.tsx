@@ -1,219 +1,236 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Clapperboard, Download, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Clapperboard, Download, Check, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Textarea, Label, FieldHint } from "@/components/ui/input";
-import { ProgressRing } from "@/components/ui/progress";
-import { useToast } from "@/components/ui/toast";
+import { Textarea, Label, FieldHint } from "@/components/ui/input";
+import { ProgressBar } from "@/components/ui/progress";
 import { AssetUploader } from "./asset-uploader";
-import { useJobPolling } from "./use-job";
-import { createVideoJob } from "./actions";
 import { cn } from "@/lib/utils/cn";
-import type { VideoFormat } from "@/types/marketing";
 
-const DURATIONS = [10, 15, 20] as const;
+type VideoAspect = "mobile" | "square" | "landscape";
 
-function ElapsedTimer({ since }: { since: string }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const seconds = Math.max(0, Math.floor((now - new Date(since).getTime()) / 1000));
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-  return (
-    <span className="font-mono text-sm tabular-nums text-ink-soft" aria-label="Elapsed time">
-      {mm}:{ss}
-    </span>
-  );
+const ASPECTS: { value: VideoAspect; label: string; ratio: string; frame: string }[] = [
+  { value: "mobile", label: "Mobile", ratio: "9:16", frame: "aspect-[9/16]" },
+  { value: "square", label: "Square", ratio: "1:1", frame: "aspect-square" },
+  { value: "landscape", label: "Landscape", ratio: "16:9", frame: "aspect-video" },
+];
+
+const RESULT_VIDEOS = [
+  { src: "/videos/ciba-recap-brand.mp4", label: "Brand Recap" },
+  { src: "/videos/ciba-recap-poster.mp4", label: "Poster Motion" },
+  { src: "/videos/ciba-recap-terminal.mp4", label: "Kinetic Cut" },
+];
+
+const GEN_MS = 9000;
+const TOTAL_MS = 16500;
+
+type Phase = "idle" | "working" | "done";
+
+function statusFor(elapsed: number): string {
+  if (elapsed < 3000) return "Generating assets";
+  if (elapsed < GEN_MS) return "Generating three videos";
+  if (elapsed < 13000) return "Rendering frames";
+  return "Finalizing your videos";
 }
 
 export function VideoPanel() {
-  const router = useRouter();
-  const toast = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [brief, setBrief] = useState("");
-  const [eventName, setEventName] = useState("");
-  const [duration, setDuration] = useState<number>(15);
-  const [videoFormat, setVideoFormat] = useState<VideoFormat>("landscape");
-  const [submitting, startSubmit] = useTransition();
-  const { job, video, track } = useJobPolling(1000);
+  const [aspect, setAspect] = useState<VideoAspect>("mobile");
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef(0);
 
-  const generating = job?.status === "generating";
-  const ready = job?.status === "ready" && job.videoOutputUrl;
+  useEffect(() => {
+    if (phase !== "working") return;
+    startRef.current = Date.now();
+    const t = setInterval(() => {
+      const e = Date.now() - startRef.current;
+      setElapsed(e);
+      if (e >= TOTAL_MS) {
+        setElapsed(TOTAL_MS);
+        setPhase("done");
+        clearInterval(t);
+      }
+    }, 100);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  const frame = ASPECTS.find((a) => a.value === aspect)!.frame;
+  const working = phase === "working";
+  const progress = Math.min(100, (elapsed / TOTAL_MS) * 100);
+  const seconds = Math.floor(elapsed / 1000);
+  const timer = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
   const submit = () => {
-    startSubmit(async () => {
-      const fd = new FormData();
-      fd.set("brief", brief);
-      fd.set("eventName", eventName);
-      fd.set("duration", String(duration));
-      fd.set("videoFormat", videoFormat);
-      files.forEach((f) => fd.append("assets", f));
-      const result = await createVideoJob(fd);
-      if ("error" in result) {
-        toast("error", result.error);
-        return;
-      }
-      track(result.jobId);
-      router.refresh();
-    });
+    if (!brief.trim() || working) return;
+    setElapsed(0);
+    setPhase("working");
   };
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[1fr_420px]">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Create a promotional video</CardTitle>
+          <CardTitle>Create promotional videos</CardTitle>
         </CardHeader>
-        <CardBody className="space-y-5">
-          <div className="flex items-start gap-2.5 rounded-md border border-amber/25 bg-amber-tint px-3.5 py-2.5">
-            <Info className="mt-0.5 size-4 shrink-0 text-amber" />
-            <p className="text-[13px] text-ink-soft">
-              Preview pipeline — this demonstrates the full experience with a sample render. The
-              production video engine plugs in without any interface changes.
-            </p>
-          </div>
-
-          <div>
-            <Label>Source assets</Label>
-            <AssetUploader files={files} onChange={setFiles} disabled={generating} />
-          </div>
-
-          <div>
-            <Label htmlFor="video-brief">Event or announcement</Label>
-            <Textarea
-              id="video-brief"
-              value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-              disabled={generating}
-              placeholder="A 15 second teaser for Kamloops Pitch Night: quick cuts of past events, event title, date, and a closing call to action…"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+        <CardBody className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-5">
             <div>
-              <Label htmlFor="video-event">Event name</Label>
-              <Input
-                id="video-event"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                disabled={generating}
-                placeholder="Kamloops Pitch Night"
-              />
+              <Label>Source assets</Label>
+              <AssetUploader files={files} onChange={setFiles} disabled={working} />
             </div>
             <div>
-              <Label>Duration</Label>
+              <Label htmlFor="video-brief">Describe your video</Label>
+              <Textarea
+                id="video-brief"
+                value={brief}
+                onChange={(e) => setBrief(e.target.value)}
+                disabled={working}
+                placeholder="A short recap of the CIBA AI for Business event: quick highlights, speaker moments, and a closing call to action…"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <Label>Aspect ratio</Label>
               <div className="flex gap-2">
-                {DURATIONS.map((d) => (
+                {ASPECTS.map((a) => (
                   <button
-                    key={d}
+                    key={a.value}
                     type="button"
-                    disabled={generating}
-                    onClick={() => setDuration(d)}
+                    disabled={working}
+                    onClick={() => setAspect(a.value)}
                     className={cn(
-                      "h-9.5 flex-1 rounded-md border text-sm font-medium transition-colors",
-                      duration === d
+                      "flex flex-1 flex-col items-center gap-1 rounded-md border py-2.5 transition-colors",
+                      aspect === a.value
                         ? "border-river bg-river-tint text-river-deep"
                         : "border-line-strong bg-surface text-ink-soft hover:border-ink-faint"
                     )}
                   >
-                    {d}s
+                    <span className="text-[13px] font-medium">{a.label}</span>
+                    <span className="font-mono text-[11px] opacity-70">{a.ratio}</span>
                   </button>
                 ))}
               </div>
+              <FieldHint>Mobile is optimized for stories, reels, and vertical feeds.</FieldHint>
             </div>
-          </div>
 
-          <div>
-            <Label>Orientation</Label>
-            <div className="flex gap-2">
-              {(
-                [
-                  ["landscape", "16:9 · Landscape"],
-                  ["vertical", "9:16 · Vertical"],
-                ] as [VideoFormat, string][]
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  disabled={generating}
-                  onClick={() => setVideoFormat(value)}
-                  className={cn(
-                    "h-9.5 flex-1 rounded-md border text-sm font-medium transition-colors",
-                    videoFormat === value
-                      ? "border-river bg-river-tint text-river-deep"
-                      : "border-line-strong bg-surface text-ink-soft hover:border-ink-faint"
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="rounded-md border border-line bg-surface-tint/50 p-3.5 text-[13px] text-ink-soft">
+              Three video variations are generated per brief, so you can choose the direction that
+              fits the channel best.
             </div>
-            <FieldHint>Around {duration} seconds, sized for {videoFormat === "landscape" ? "web and LinkedIn" : "stories and reels"}.</FieldHint>
-          </div>
 
-          <div className="flex justify-end border-t border-line pt-4">
-            <Button
-              onClick={submit}
-              disabled={!brief.trim() || generating}
-              loading={submitting || generating}
-              icon={<Clapperboard className="size-4" />}
-            >
-              {generating ? "Generating…" : "Generate video"}
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                onClick={submit}
+                disabled={!brief.trim() || working}
+                loading={working}
+                icon={!working ? <Sparkles className="size-4" /> : undefined}
+              >
+                {working ? "Generating…" : "Generate videos"}
+              </Button>
+            </div>
           </div>
         </CardBody>
       </Card>
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-ink">Video</h2>
-        <div
-          className={cn(
-            "relative overflow-hidden rounded-lg border border-line bg-surface-tint",
-            videoFormat === "landscape" ? "aspect-video" : "mx-auto aspect-[9/16] max-w-[280px]"
-          )}
-        >
-          {ready ? (
-            <video
-              src={job.videoOutputUrl}
-              controls
-              className="absolute inset-0 h-full w-full bg-ink object-contain"
-            />
-          ) : generating && job?.startedAt ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <div className="relative">
-                <ProgressRing value={video?.progress ?? 2} />
-                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold text-ink">
-                  {video?.progress ?? 0}%
-                </span>
-              </div>
-              <ElapsedTimer since={job.startedAt} />
-              <p className="animate-fade-in text-[13px] text-ink-soft" key={video?.stage}>
-                {video?.stage ?? "Preparing"}…
-              </p>
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
-              <Clapperboard className="size-6 text-ink-faint" strokeWidth={1.5} />
-              <p className="px-6 text-[13px] text-ink-faint">
-                Your generated video plays here, with live progress while it renders.
-              </p>
-            </div>
-          )}
+      {/* Output */}
+      {phase === "idle" ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface/60 py-16 text-center">
+          <Clapperboard className="size-6 text-ink-faint" strokeWidth={1.5} />
+          <p className="mt-3 max-w-sm px-6 text-[13px] text-ink-faint">
+            Your generated videos appear here. Describe the video you want and generate three
+            variations at once.
+          </p>
         </div>
-        {ready && (
-          <a href={job.videoOutputUrl} download="ciba-promo.mp4">
-            <Button variant="secondary" size="sm" icon={<Download className="size-3.5" />}>
-              Download video
-            </Button>
-          </a>
+      ) : (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-ink">
+                {working ? "Generating your videos" : "Your videos"}
+              </h2>
+              {phase === "done" && (
+                <span className="flex items-center gap-1 rounded-full bg-river-tint px-2 py-0.5 text-[11.5px] font-medium text-river-deep">
+                  <Check className="size-3" /> 3 videos created
+                </span>
+              )}
+            </div>
+            {working && (
+              <span className="font-mono text-[13px] tabular-nums text-ink-soft">{timer}</span>
+            )}
+          </div>
+
+          {working && (
+            <div className="space-y-2">
+              <ProgressBar value={progress} />
+              <p key={statusFor(elapsed)} className="animate-fade-in text-[13px] text-ink-soft">
+                {statusFor(elapsed)}…
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {RESULT_VIDEOS.map((v, i) => (
+              <VideoCard key={v.src} video={v} frame={frame} done={phase === "done"} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function VideoCard({
+  video,
+  frame,
+  done,
+  index,
+}: {
+  video: { src: string; label: string };
+  frame: string;
+  done: boolean;
+  index: number;
+}) {
+  return (
+    <figure className="group">
+      <div className={cn("relative overflow-hidden rounded-lg border border-line bg-ink", frame)}>
+        {done ? (
+          <>
+            <video
+              src={video.src}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <a
+              href={video.src}
+              download={`ciba-${video.label.toLowerCase().replace(/\s+/g, "-")}.mp4`}
+              className="absolute right-2 top-2 z-10 flex size-8 items-center justify-center rounded-md bg-white/90 text-ink opacity-0 shadow-1 transition-opacity duration-150 group-hover:opacity-100 hover:bg-white"
+              aria-label={`Download ${video.label}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Download className="size-4" />
+            </a>
+          </>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[linear-gradient(110deg,#1a1d1c_40%,#232827_50%,#1a1d1c_60%)] bg-[length:200%_100%] animate-shimmer">
+            <Loader2 className="size-5 animate-spin text-white/70" />
+            <span className="text-[12px] text-white/70">Rendering variation {index + 1}</span>
+          </div>
         )}
       </div>
-    </div>
+      <figcaption className="mt-1.5 flex items-center justify-between">
+        <span className="text-xs font-medium text-ink-soft">{video.label}</span>
+        {done && <span className="font-mono text-[10px] text-ink-faint">Ready</span>}
+      </figcaption>
+    </figure>
   );
 }

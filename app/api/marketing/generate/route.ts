@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getJob, patchJob } from "@/features/marketing/data";
 import { composePosterPrompt } from "@/lib/ai/prompts/marketing";
-import { generatePoster, writeOutput } from "@/lib/ai/openai-images";
+import { generatePoster, writeOutput, brandLogosPresent } from "@/lib/ai/openai-images";
 import { mockPosterSvg, sleep } from "@/lib/ai/mock";
-import { isMockAI } from "@/lib/config";
+import { isMockImages } from "@/lib/config";
 import { nowIso } from "@/lib/utils/dates";
 import { ALL_FORMATS, type OutputFormat } from "@/types/marketing";
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     (ALL_FORMATS as string[]).includes(f)
   );
   const formats = requested?.length ? requested : job.formats;
-  const mock = isMockAI();
+  const mock = isMockImages();
 
   await patchJob(jobId, (j) => ({
     ...j,
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         relPath = `marketing/outputs/${jobId}/${format}.svg`;
         await writeOutput(relPath, mockPosterSvg({ format, ...job }));
       } else {
-        const prompt = await composePosterPrompt(job, format);
+        const prompt = await composePosterPrompt(job, format, brandLogosPresent());
         const png = await generatePoster({ prompt, format, assetPaths: job.assetPaths });
         relPath = `marketing/outputs/${jobId}/${format}.png`;
         await writeOutput(relPath, png);

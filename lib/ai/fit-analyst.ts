@@ -4,7 +4,7 @@ import { stripEmDashes } from "./sanitize";
 import { searchDocs } from "@/lib/content/search";
 import { getDoc } from "@/lib/content/loader";
 import { nowIso } from "@/lib/utils/dates";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import type { Discovery, FitAnalysis } from "@/types/grants";
 
 const FIT_SCHEMA = {
@@ -31,7 +31,7 @@ export async function analyzeFit(discovery: Discovery): Promise<FitAnalysis> {
   );
   const relatedDocs = topDocs.map((d) => ({ slug: d.slug, title: d.title }));
 
-  if (isMockAI()) {
+  if (isMockText()) {
     const score = Math.min(92, 45 + hits.length * 11);
     return {
       score,

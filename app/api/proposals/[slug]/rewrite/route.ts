@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import { generateText } from "@/lib/ai/gemini";
 import { stripEmDashes } from "@/lib/ai/sanitize";
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   const instruction = body.instruction || "Rewrite";
   if (!text.trim()) return NextResponse.json({ error: "text required" }, { status: 400 });
 
-  if (isMockAI()) {
+  if (isMockText()) {
     return NextResponse.json({ text: stripEmDashes(mockRewrite(text, instruction)) });
   }
 

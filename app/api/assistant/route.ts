@@ -7,7 +7,7 @@ import {
   summarizeKnowledgeTool,
 } from "@/lib/ai/tools/knowledge";
 import { assistantSystemPrompt } from "@/lib/ai/prompts/assistant";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import type { GeminiContent } from "@/lib/ai/gemini";
 
 export const maxDuration = 120;
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const question = messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
 
   return ndjsonStream(async (emit) => {
-    if (isMockAI()) {
+    if (isMockText()) {
       await mockAgentRun(question, emit);
       return;
     }

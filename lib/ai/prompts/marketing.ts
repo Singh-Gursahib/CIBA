@@ -15,6 +15,18 @@ const FORMAT_GUIDANCE: Record<OutputFormat, string> = {
     "Vertical mobile-first post. Large legible type sized for small screens, strong contrast, single clear focal point.",
 };
 
+/**
+ * Palette inspired by Thompson Rivers University's brand, CIBA's strategic
+ * academic partner. Fed into the image prompt for a cohesive, on-brand look.
+ */
+const PALETTE = [
+  "Deep blue #003E51 (primary, backgrounds and large blocks)",
+  "Bright teal #00B0B9 (accent, highlights and rules)",
+  "Warm yellow #FFCD00 (sparing punch for a key word or the call to action)",
+  "Sage #BAD1BA and cloud #FFF5DE (soft, calm supporting tones and light bands)",
+  "Off-white #FAF9F7 background and deep ink #16181D for body text",
+].join("; ");
+
 async function loadBrandDoc(): Promise<string> {
   try {
     return await fs.readFile(path.join(BRAND_DIR, "brand.md"), "utf8");
@@ -23,8 +35,16 @@ async function loadBrandDoc(): Promise<string> {
   }
 }
 
-export async function composePosterPrompt(job: MarketingJob, format: OutputFormat): Promise<string> {
+export async function composePosterPrompt(
+  job: MarketingJob,
+  format: OutputFormat,
+  hasLogos: boolean
+): Promise<string> {
   const brand = await loadBrandDoc();
+
+  const logoRule = hasLogos
+    ? "- Both provided logo images (CIBA and TRU) must appear together in a clean strip near the bottom, undistorted, on a light band, with clear space around each."
+    : "- Render a tidy co-brand lockup near the bottom on a light band: the wordmark \"CIBA\" on the left and \"Thompson Rivers University\" on the right, in clean, correctly spelled type with clear space around each.";
 
   const details = [
     job.eventName && `Event name (use verbatim as the headline): ${job.eventName}`,
@@ -35,9 +55,16 @@ export async function composePosterPrompt(job: MarketingJob, format: OutputForma
     .join("\n");
 
   return [
-    "Design a polished event poster for CIBA (Central Interior Business Accelerator).",
+    "You are a senior graphic designer. Compose a single, polished, formal marketing poster for CIBA (Central Interior Business Accelerator), a regional innovation hub whose strategic academic partner is Thompson Rivers University (TRU).",
     "",
-    "== BRAND GUIDELINES (follow strictly) ==",
+    "== COMPOSITION ==",
+    "Arrange the supplied reference photographs into a refined, professional collage: a clean grid or a layered arrangement with a clear focal image, subtle rounded corners or thin dividers, and generous whitespace. The result should look like corporate marketing material designed by a professional studio, not a casual social post. Balance imagery with a strong headline and a tidy information block.",
+    "",
+    "== COLOR PALETTE (follow closely, inspired by Thompson Rivers University) ==",
+    PALETTE,
+    "Lean on deep blue and teal for a formal, credible feel, with yellow used sparingly as a single accent.",
+    "",
+    "== BRAND GUIDELINES ==",
     brand,
     "",
     "== FORMAT ==",
@@ -48,10 +75,11 @@ export async function composePosterPrompt(job: MarketingJob, format: OutputForma
     details ? `\n${details}` : "",
     "",
     "== HARD RULES ==",
-    "- Incorporate the supplied reference images tastefully; the logo images provided must appear in a clean strip near the bottom, undistorted, on a light band.",
-    "- All text must be perfectly spelled, using only the event details given above. Never invent dates, prices, or URLs.",
-    "- Strong typographic hierarchy: event title largest, then date/venue, then call to action.",
-    "- Keep all essential text inside a 6% safe margin from every edge.",
+    "- Build the collage from the supplied reference photographs; keep faces and important subjects intact and undistorted.",
+    logoRule,
+    "- All text must be perfectly spelled and legible, using only the event details given above. Never invent dates, prices, or URLs.",
+    "- Strong typographic hierarchy: event title largest, then date and venue, then the call to action. Use a refined sans-serif or elegant serif for headings.",
+    "- Keep all essential text inside a 6% safe margin from every edge. Overall tone: formal, modern, and confident.",
   ]
     .filter((line) => line !== "")
     .join("\n");

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import { generateJson } from "@/lib/ai/gemini";
 import { questionsSystemPrompt } from "@/lib/ai/prompts/proposal";
 import { getDiscovery } from "@/features/grants/data";
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   const { discoveryId } = (await req.json().catch(() => ({}))) as { discoveryId?: string };
   const discovery = discoveryId ? await getDiscovery(discoveryId) : undefined;
 
-  if (isMockAI() || !discovery) {
+  if (isMockText() || !discovery) {
     return NextResponse.json({ questions: mockQuestions() });
   }
 

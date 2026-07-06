@@ -1,5 +1,5 @@
 import { ndjsonStream } from "@/lib/ai/stream";
-import { isMockAI } from "@/lib/config";
+import { isMockText } from "@/lib/config";
 import { nowIso } from "@/lib/utils/dates";
 import { scanOrg } from "@/lib/ai/grant-scout";
 import { mockScanOrg } from "@/lib/ai/mock-scout";
@@ -18,7 +18,7 @@ export async function POST() {
   return ndjsonStream(async (emit) => {
     const orgs = await listOrgs();
     const startedAt = nowIso();
-    const mock = isMockAI();
+    const mock = isMockText();
 
     const orgsChecked: ScanLogEntry["orgsChecked"] = [];
     const newIds: string[] = [];
