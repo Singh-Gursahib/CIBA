@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Banknote, Megaphone, Film, FolderOpen, Lock, Rocket } from "lucide-react";
 import { currentMember } from "@/lib/os/auth";
 import { SectionTitle } from "@/components/ui";
+import { AddEntity } from "@/components/add-entity";
 import { readStudioPosts } from "@/lib/os/context";
 import {
   fmtCAD,
@@ -105,7 +106,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       <div className="grid lg:grid-cols-2 gap-6 items-start">
         {/* Funding */}
         <div className="card p-5">
-          <SectionTitle icon={<Banknote />}>Funding</SectionTitle>
+          <div className="flex items-center justify-between gap-2">
+            <SectionTitle icon={<Banknote />}>Funding</SectionTitle>
+            <AddEntity type="funding" defaultProjectId={project.id} size="sm" label="Log" />
+          </div>
           <div className="mt-3 space-y-3">
             {funding.length === 0 && <p className="text-sm text-muted">No funding records visible to you.</p>}
             {funding.map((f) => (
@@ -183,7 +187,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* Documents */}
         <div className="card p-5">
-          <SectionTitle icon={<FolderOpen />}>Documents</SectionTitle>
+          <div className="flex items-center justify-between gap-2">
+            <SectionTitle icon={<FolderOpen />}>Documents</SectionTitle>
+            <AddEntity type="doc" defaultProjectId={project.id} size="sm" label="Add" />
+          </div>
           <p className="text-xs text-muted mt-0.5">
             Sensitive documents are visible only to the project lead and executives.
           </p>
@@ -207,7 +214,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* Ventures */}
         <div className="card p-5">
-          <SectionTitle icon={<Rocket />}>Ventures in this program</SectionTitle>
+          <div className="flex items-center justify-between gap-2">
+            <SectionTitle icon={<Rocket />}>Ventures in this program</SectionTitle>
+            <AddEntity type="venture" defaultProjectId={project.id} size="sm" label="Add" />
+          </div>
           <div className="mt-3 space-y-3">
             {ventures.length === 0 && <p className="text-sm text-muted">No ventures recorded.</p>}
             {ventures.map((v) => (

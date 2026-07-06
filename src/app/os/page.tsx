@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Donut, HBarChart } from "@/components/charts";
+import { AddEntity } from "@/components/add-entity";
 import { currentMember } from "@/lib/os/auth";
 import { Landmark, Megaphone, Clock } from "lucide-react";
 import { readStudioPosts } from "@/lib/os/social/read-sync";
@@ -67,13 +68,16 @@ export default async function OSDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Good morning, {member.name.split(" ")[0]}
-        </h1>
-        <p className="text-muted text-sm mt-1">
-          Your view of CIBA — {projects.length} collaboration{projects.length === 1 ? "" : "s"}, scoped to your access.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Good morning, {member.name.split(" ")[0]}
+          </h1>
+          <p className="text-muted text-sm mt-1">
+            Your view of CIBA — {projects.length} collaboration{projects.length === 1 ? "" : "s"}, scoped to your access.
+          </p>
+        </div>
+        {member.role === "executive" && <AddEntity type="project" />}
       </div>
 
       {/* Impact + funding rollups */}

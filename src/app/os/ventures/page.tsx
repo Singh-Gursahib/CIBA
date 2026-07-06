@@ -1,7 +1,7 @@
 import { Donut, HBarChart } from "@/components/charts";
+import { AddEntity } from "@/components/add-entity";
 import { currentMember } from "@/lib/os/auth";
-import { canAccessProject, fmtCAD, visibleVentures } from "@/lib/os/store";
-import { PROJECTS } from "@/lib/os/seed";
+import { allProjects, canAccessProject, fmtCAD, visibleProjects, visibleVentures } from "@/lib/os/store";
 
 const stageColor: Record<string, string> = {
   idea: "#8a978f",
@@ -12,6 +12,8 @@ const stageColor: Record<string, string> = {
 
 export default async function VenturesPage() {
   const member = (await currentMember())!;
+  const PROJECTS = allProjects();
+  const projectOpts = visibleProjects(member).map((p) => ({ id: p.id, name: p.name }));
   const ventures = visibleVentures(member).sort(
     (a, b) => b.metrics.revenueCAD - a.metrics.revenueCAD,
   );
@@ -38,11 +40,14 @@ export default async function VenturesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Venture Portfolio</h1>
-        <p className="text-sm text-muted mt-1">
-          Every venture in your visible programs — the numbers behind CIBA&apos;s funder reports.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Venture Portfolio</h1>
+          <p className="text-sm text-muted mt-1">
+            Every venture in your visible programs — the numbers behind CIBA&apos;s funder reports.
+          </p>
+        </div>
+        {projectOpts.length > 0 && <AddEntity type="venture" projects={projectOpts} />}
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4">

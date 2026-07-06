@@ -20,6 +20,10 @@ Sign in as any of 5 team members (`/os-login`); **everything is permission-scope
 | **Integrations** (`/os/integrations`) | Financing ledger (QuickBooks), social publishing (YouTube / Instagram via the Studio), events (Eventbrite), document vault (Drive), venture CRM (Airtable), AI layer — with per-role operate permissions and health status |
 | **AI Assistant** (`/os/assistant`) | The LLM access layer: the model receives **only the signed-in member's scoped data** — it can't leak what it never saw. Ask the same question as different members and watch answers change |
 
+### It's operable, not just a view
+
+The OS ships with rich seed data, but every member can **create records that flow through the whole system**. Add a **venture** (Ventures page), **log funding** or **add a document** (any collaboration page), or — as the Executive Director — **stand up a new collaboration** (Dashboard). New records are permission-scoped exactly like seed data and immediately update the impact/funding rollups, deadline radar, project pages, brain map, and the AI assistant's context. Additions persist to `.data/os-overlay.json` (gitignored) on top of the immutable seed.
+
 The collaborations are CIBA's **real programs and partners**: TRU Generator (Thompson Rivers University), Road to Web Summit Vancouver (Innovate BC), AccelerateIP (New Ventures BC + Innovate BC), ThreeSixty & Delta delivery (Accelerate Okanagan / PacifiCan), Applied AI Implementation Clinics (Discovery Foundation), AI Skills Accelerator (KPMG sponsor), Indigenous business development (Sc.wén̓wen / Tk̓emlúps te Secwépemc), newcomer workshops (Kamloops Immigration Services), and the ETSI-BC-funded strategic plan. Team members, ventures, dollar amounts, and documents are illustrative dummy data.
 
 ### The 5 demo members

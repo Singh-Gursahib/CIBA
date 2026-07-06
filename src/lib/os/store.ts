@@ -14,12 +14,33 @@ import {
   VENTURES,
 } from "./seed";
 import { readStudioPosts } from "./social/read-sync";
+import {
+  overlayActivity,
+  overlayDocs,
+  overlayFunding,
+  overlayPartners,
+  overlayProjects,
+  overlayVentures,
+} from "./overlay";
 import type { Doc, FundingRecord, Integration, Member, Partner, Project, SocialPost, Venture } from "./types";
+
+// Seed + anything a member has created this session. The overlay is what makes
+// the OS operable; merging it here means every scoped read, rollup, and the
+// brain map pick up new records with no page-level changes.
+const allProjectsList = (): Project[] => [...PROJECTS, ...overlayProjects()];
+const allVenturesList = (): Venture[] => [...VENTURES, ...overlayVentures()];
+const allFundingList = (): FundingRecord[] => [...FUNDING, ...overlayFunding()];
+const allPartnersList = (): Partner[] => [...PARTNERS, ...overlayPartners()];
+const allDocsList = (): Doc[] => [...DOCS, ...overlayDocs()];
+const allActivityList = (): ReturnType<typeof overlayActivity> => [...overlayActivity(), ...ACTIVITY];
+
+/** Every collaboration, seed + created — for name lookups and form pickers. */
+export const allProjects = (): Project[] => allProjectsList();
 
 export const getMember = (id: string): Member | undefined => MEMBERS.find((m) => m.id === id);
 export const allMembers = (): Member[] => MEMBERS;
-export const getPartner = (id: string): Partner | undefined => PARTNERS.find((p) => p.id === id);
-export const allPartners = (): Partner[] => PARTNERS;
+export const getPartner = (id: string): Partner | undefined => allPartnersList().find((p) => p.id === id);
+export const allPartners = (): Partner[] => allPartnersList();
 export const getIntegration = (id: string): Integration | undefined => INTEGRATIONS.find((i) => i.id === id);
 export const allIntegrations = (): Integration[] => INTEGRATIONS;
 
@@ -29,27 +50,27 @@ export function canAccessProject(member: Member, projectId: string): boolean {
 }
 
 export function visibleProjects(member: Member): Project[] {
-  return PROJECTS.filter((p) => canAccessProject(member, p.id));
+  return allProjectsList().filter((p) => canAccessProject(member, p.id));
 }
 
 export function getProject(member: Member, id: string): Project | undefined {
-  const p = PROJECTS.find((x) => x.id === id);
+  const p = allProjectsList().find((x) => x.id === id);
   return p && canAccessProject(member, p.id) ? p : undefined;
 }
 
 /** Sensitive docs are only visible to executives and the project lead. */
 export function visibleDocs(member: Member, projectId?: string): Doc[] {
-  return DOCS.filter((d) => {
+  return allDocsList().filter((d) => {
     if (projectId && d.projectId !== projectId) return false;
     if (!canAccessProject(member, d.projectId)) return false;
     if (!d.sensitive) return true;
-    const project = PROJECTS.find((p) => p.id === d.projectId);
+    const project = allProjectsList().find((p) => p.id === d.projectId);
     return member.role === "executive" || project?.leadMemberId === member.id;
   });
 }
 
 export function visibleFunding(member: Member, projectId?: string): FundingRecord[] {
-  return FUNDING.filter(
+  return allFundingList().filter(
     (f) => (!projectId || f.projectId === projectId) && canAccessProject(member, f.projectId),
   );
 }
@@ -61,14 +82,14 @@ export function visibleSocial(member: Member, projectId?: string): SocialPost[] 
 }
 
 export function visibleVentures(member: Member, projectId?: string): Venture[] {
-  return VENTURES.filter((v) => {
+  return allVenturesList().filter((v) => {
     const ids = projectId ? v.projectIds.filter((id) => id === projectId) : v.projectIds;
     return ids.some((id) => canAccessProject(member, id));
   });
 }
 
 export function visibleActivity(member: Member) {
-  return ACTIVITY.filter((a) => !a.projectId || canAccessProject(member, a.projectId));
+  return allActivityList().filter((a) => !a.projectId || canAccessProject(member, a.projectId));
 }
 
 export function visibleIntegrations(member: Member): Integration[] {
