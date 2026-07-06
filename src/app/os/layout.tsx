@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Network, Inbox, CalendarDays, Rocket, Banknote, Landmark, Palette, Megaphone, Cable, Sparkles, Settings } from "lucide-react";
+import { LayoutDashboard, Network, Inbox, CalendarDays, Rocket, Banknote, Landmark, Palette, Megaphone, Cable, Waypoints, Sparkles, Settings } from "lucide-react";
 import { currentMember, impersonator } from "@/lib/os/auth";
 import { ToastProvider } from "@/components/toast";
 import { ImpersonationBanner } from "./impersonation-banner";
@@ -9,6 +9,7 @@ import { SwitchMemberButton } from "./switch-member";
 const NAV = [
   { href: "/os", label: "Dashboard", icon: LayoutDashboard },
   { href: "/os/brain-map", label: "Brain Map", icon: Network },
+  { href: "/os/knowledge", label: "Knowledge", icon: Waypoints },
   { href: "/os/inbox", label: "Inbox", icon: Inbox },
   { href: "/os/timeline", label: "Timeline", icon: CalendarDays },
   { href: "/os/ventures", label: "Ventures", icon: Rocket },

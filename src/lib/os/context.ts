@@ -3,6 +3,7 @@
 // data outside the member's access — it can't leak what it never saw.
 
 import { readStudioPosts, type StudioPostLite } from "./social/read-sync";
+import { listDocs } from "./knowledge/search";
 import {
   BALANCE_SHEET,
   FISCAL_YTD,
@@ -144,6 +145,11 @@ export function scopedContext(member: Member): string {
       );
     }
   }
+
+  parts.push(
+    "CIBA KNOWLEDGE BASE (reference docs the member can cite):\n" +
+      listDocs().map((d) => `- ${d.title} (${d.type}): ${d.summary}`).join("\n"),
+  );
 
   parts.push(
     "INTEGRATIONS THIS MEMBER OPERATES: " +
