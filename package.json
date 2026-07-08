@@ -11,6 +11,11 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.5",
+    "@tiptap/extension-bubble-menu": "^3.27.3",
+    "@tiptap/extension-placeholder": "^3.27.3",
+    "@tiptap/pm": "^3.27.3",
+    "@tiptap/react": "^3.27.3",
+    "@tiptap/starter-kit": "^3.27.3",
     "ai": "^7.0.11",
     "docx": "^9.7.1",
     "ffmpeg-static": "^5.3.0",
@@ -18,10 +23,13 @@
     "marked": "^18.0.5",
     "msedge-tts": "^2.0.5",
     "next": "16.2.10",
+    "openai": "^6.45.0",
+    "puppeteer-core": "^25.3.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "tiptap-markdown": "^0.9.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
